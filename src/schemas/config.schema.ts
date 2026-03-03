@@ -12,7 +12,7 @@ export const AzureDevOpsConfigSchema = z.object({
 });
 
 export const StorageConfigSchema = z.object({
-  basePath: z.string().default("./.claude/data"),
+  basePath: z.string().default("./.claude/ado"),
   workItemsPath: z.string().default("work-items"),
   tsgPath: z.string().default("tsg"),
 });
@@ -28,7 +28,7 @@ export const AdoConfigSchema = z.object({
   version: z.string().default("1.0"),
   azure_devops: AzureDevOpsConfigSchema,
   storage: StorageConfigSchema.default({
-    basePath: "./.claude/data",
+    basePath: "./.claude/ado",
     workItemsPath: "work-items",
     tsgPath: "tsg",
   }),

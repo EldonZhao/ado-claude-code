@@ -53,8 +53,8 @@ cp -r agents/ /path/to/your-project/.claude/agents/
 cp -r rules/ /path/to/your-project/.claude/rules/
 ```
 
-> **Note:** With manual copy, commands are unnamespaced (e.g., `/ado-sync`).
-> With marketplace install, they are namespaced (e.g., `/ado-claude-code:ado-sync`).
+> **Note:** With manual copy, commands are unnamespaced (e.g., `/sync`).
+> With marketplace install, they are namespaced (e.g., `/ado-claude-code:sync`).
 
 ## Setup
 
@@ -93,12 +93,12 @@ node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --pr
 
 | Command | Description |
 |---------|-------------|
-| `/ado-sync` | Pull/push/full sync work items with Azure DevOps |
-| `/ado-plan` | AI-assisted work item breakdown |
-| `/ado-query` | Run WIQL queries or list local items |
+| `/sync` | Pull/push/full sync work items with Azure DevOps |
+| `/plan` | AI-assisted work item breakdown |
+| `/query` | Run WIQL queries or list local items |
 | `/troubleshoot` | Diagnose issues, analyze output, suggest resolutions |
 | `/tsg-create` | Create and manage troubleshooting guides |
-| `/ado-setup` | Initialize, validate, login/logout, or show configuration |
+| `/setup` | Initialize, validate, login/logout, or show configuration |
 
 ### Skills (4)
 

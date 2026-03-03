@@ -60,6 +60,6 @@ If the user provides a specific action argument, run just that action:
 
 - Configuration is stored in `.claude/.ado-config.yaml`
 - Token cache is stored in `.claude/.ado-token-cache.json`
-- Data directory is `.claude/data/`
+- Data directory is `.claude/ado/`
 - The user needs Azure CLI installed for Azure AD authentication (`az login`)
 - For PAT auth, the user must set the `ADO_PAT` environment variable

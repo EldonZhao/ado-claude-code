@@ -17,7 +17,7 @@ Domains: `work-items`, `sync`, `tsg`, `setup`, `troubleshoot`
 
 ## Work Item YAML Format
 
-Local work items are stored in `.claude/data/work-items/<type>/<id>.yaml`:
+Local work items are stored in `.claude/ado/work-items/<type>/<id>.yaml`:
 
 ```yaml
 id: 1234

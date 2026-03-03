@@ -19,8 +19,8 @@ Thumbs.db
 # ADO config, token cache, and synced work items
 .claude/.ado-config.yaml
 .claude/.ado-token-cache.json
-.claude/data/work-items/
-.claude/data/.ado-sync/
+.claude/ado/work-items/
+.claude/ado/.ado-sync/
 
 # Coverage
 coverage/
