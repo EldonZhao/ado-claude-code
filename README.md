@@ -11,20 +11,60 @@ Claude Code plugin for [Azure DevOps](https://dev.azure.com) integration. Sync w
 
 ## Installation
 
+### Option A: Plugin Marketplace (Recommended)
+
 ```bash
-npm install
-npm run build
+# 1. Add the marketplace
+/plugin marketplace add EldonZhao/ado-claude-code
+
+# 2. Install the plugin
+/plugin install ado-claude-code@ado-claude-code
 ```
 
-## Configuration
+After installation, build the CLI:
 
-### 1. Set up credentials
+```bash
+cd ~/.claude/plugins/cache/ado-claude-code   # or wherever the plugin was installed
+npm install && npm run build
+```
+
+### Option B: Local Plugin (Development / Testing)
+
+```bash
+git clone https://github.com/EldonZhao/ado-claude-code.git
+cd ado-claude-code
+npm install && npm run build
+
+# Launch Claude Code with the plugin loaded
+claude --plugin-dir ./ado-claude-code
+```
+
+### Option C: Manual Copy
+
+```bash
+git clone https://github.com/EldonZhao/ado-claude-code.git
+cd ado-claude-code
+npm install && npm run build
+
+# Copy plugin components into your project's .claude/ directory
+cp -r commands/ /path/to/your-project/.claude/commands/
+cp -r skills/ /path/to/your-project/.claude/skills/
+cp -r agents/ /path/to/your-project/.claude/agents/
+cp -r rules/ /path/to/your-project/.claude/rules/
+```
+
+> **Note:** With manual copy, commands are unnamespaced (e.g., `/ado-sync`).
+> With marketplace install, they are namespaced (e.g., `/ado-claude-code:ado-sync`).
+
+## Setup
+
+### 1. Set your Azure DevOps PAT
 
 ```bash
 export ADO_PAT="your-personal-access-token"
 ```
 
-### 2. Initialize the plugin
+### 2. Initialize configuration
 
 ```bash
 node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --project="YourProject"
@@ -36,18 +76,48 @@ node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --pr
 node dist/cli.js setup validate
 ```
 
-## Plugin Setup (Claude Code)
+## What's Included
 
-Add this project as a Claude Code plugin. The plugin provides:
+### Slash Commands (6)
 
-- **6 Slash Commands** — `/ado-sync`, `/ado-plan`, `/ado-query`, `/troubleshoot`, `/tsg-create`, `/ado-setup`
-- **4 Skills** — Domain knowledge for work items, TSGs, troubleshooting, and planning
-- **2 Agents** — Specialist subagents for planning and troubleshooting
-- **1 Rule** — Always-active ADO conventions
+| Command | Description |
+|---------|-------------|
+| `/ado-sync` | Pull/push/full sync work items with Azure DevOps |
+| `/ado-plan` | AI-assisted work item breakdown |
+| `/ado-query` | Run WIQL queries or list local items |
+| `/troubleshoot` | Diagnose issues, analyze output, suggest resolutions |
+| `/tsg-create` | Create and manage troubleshooting guides |
+| `/ado-setup` | Initialize, validate, or show configuration |
 
-## CLI Commands
+### Skills (4)
 
-All operations use the CLI at `dist/cli.js`. Output is JSON to stdout.
+| Skill | Description |
+|-------|-------------|
+| `ado-work-items` | ADO work item types, hierarchy, states, field mappings |
+| `ado-tsg` | TSG structure, categories, diagnostic patterns |
+| `ado-troubleshooting` | Troubleshooting methodology and workflow |
+| `ado-planning` | Work item breakdown and estimation guidance |
+
+### Agents (2)
+
+| Agent | Description |
+|-------|-------------|
+| `ado-planner` | Specialist for breaking down work items into structured hierarchies |
+| `ado-troubleshooter` | Specialist for diagnosing issues using TSG-based troubleshooting |
+
+### Rules (1)
+
+| Rule | Description |
+|------|-------------|
+| `ado-conventions` | Always-active ADO naming conventions, YAML structure, sync workflow |
+
+## CLI Reference
+
+All commands output JSON to stdout. The CLI is invoked by plugin commands via Bash.
+
+```
+node dist/cli.js <domain> <action> [--flags]
+```
 
 ### Setup
 ```bash
@@ -116,15 +186,11 @@ src/
     sync/               Sync engine, mapper, state
     tsg/                TSG search, executor
     planning/           Work item breakdown
-  storage/
-    config.ts           Config file management
-    work-items.ts       Work item YAML storage
-    tsg.ts              TSG YAML storage
-    cache.ts            API response cache
+  storage/              Config, work-items, TSG, cache (YAML I/O)
   schemas/              Zod validation schemas
   utils/                Logger, error classes
 
-.claude-plugin/         Plugin manifest
+.claude-plugin/         Plugin manifest + marketplace catalog
 commands/               Slash commands (6)
 skills/                 Domain knowledge (4)
 agents/                 Specialist subagents (2)

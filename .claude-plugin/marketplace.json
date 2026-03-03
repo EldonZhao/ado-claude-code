@@ -1,0 +1,10 @@
+{
+  "plugins": [
+    {
+      "name": "ado-claude-code",
+      "description": "Azure DevOps integration for Claude Code — work item sync, AI planning, TSG management, and troubleshooting",
+      "version": "1.0.0",
+      "path": "."
+    }
+  ]
+}
