@@ -16,7 +16,6 @@ export async function getAdoClient(
   return clientInstance;
 }
 
-// Re-export mapper for use by tools
 export function mapAdoToLocal(item: AdoWorkItem): LocalWorkItemOutput {
   return adoToLocal(item);
 }
@@ -31,4 +30,32 @@ export function formatWorkItemSummary(item: LocalWorkItemOutput): string {
   if (item.storyPoints) parts.push(`  Points: ${item.storyPoints}`);
   if (item.iterationPath) parts.push(`  Iteration: ${item.iterationPath}`);
   return parts.join("\n");
+}
+
+/** Write JSON to stdout */
+export function output(data: unknown): void {
+  process.stdout.write(JSON.stringify(data, null, 2) + "\n");
+}
+
+/** Write error to stderr and exit */
+export function fatal(message: string, exitCode = 1): never {
+  process.stderr.write(`Error: ${message}\n`);
+  process.exit(exitCode);
+}
+
+/** Parse --flag=value args into a record */
+export function parseFlags(args: string[]): Record<string, string> {
+  const flags: Record<string, string> = {};
+  for (const arg of args) {
+    if (arg.startsWith("--")) {
+      const eq = arg.indexOf("=");
+      if (eq !== -1) {
+        flags[arg.slice(2, eq)] = arg.slice(eq + 1);
+      } else {
+        // Boolean flag
+        flags[arg.slice(2)] = "true";
+      }
+    }
+  }
+  return flags;
 }

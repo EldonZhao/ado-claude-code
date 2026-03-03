@@ -1,16 +1,16 @@
 {
   "name": "ado-claude-code",
   "version": "0.1.0",
-  "description": "Claude Code MCP server plugin for Azure DevOps integration",
+  "description": "Claude Code plugin for Azure DevOps integration",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/cli.js",
   "bin": {
-    "ado-claude-code": "dist/index.js"
+    "ado-claude-code": "dist/cli.js"
   },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "start": "node dist/index.js",
+    "start": "node dist/cli.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
@@ -18,7 +18,7 @@
   },
   "keywords": [
     "claude-code",
-    "mcp",
+    "plugin",
     "azure-devops",
     "work-items",
     "tsg"
@@ -36,7 +36,6 @@
     "vitest": "^4.0.18"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.1",
     "azure-devops-node-api": "^15.1.2",
     "pino": "^10.3.1",
     "yaml": "^2.8.2",

@@ -1,12 +1,3 @@
-import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-
-export interface ToolDefinition {
-  name: string;
-  description: string;
-  inputSchema: Record<string, unknown>;
-  handler: (params: unknown) => Promise<CallToolResult>;
-}
-
 // Work item types from Azure DevOps
 export type WorkItemType =
   | "Epic"

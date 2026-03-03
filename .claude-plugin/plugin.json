@@ -1,0 +1,10 @@
+{
+  "name": "ado-claude-code",
+  "version": "1.0.0",
+  "description": "Azure DevOps integration for Claude Code",
+  "skills": ["skills/*/SKILL.md"],
+  "agents": [
+    "agents/ado-planner.md",
+    "agents/ado-troubleshooter.md"
+  ]
+}

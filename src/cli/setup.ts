@@ -1,0 +1,191 @@
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import { output, fatal, parseFlags } from "./helpers.js";
+import { saveConfig, loadConfig, clearConfigCache } from "../storage/config.js";
+import { getCredentials } from "../services/ado/auth.js";
+import { AdoConfigSchema, type AdoConfigOutput } from "../schemas/config.schema.js";
+
+export async function handleSetup(args: string[]): Promise<void> {
+  const action = args[0];
+  if (!action || !["init", "validate", "show"].includes(action)) {
+    fatal("Usage: setup <init|validate|show> [args]");
+  }
+
+  switch (action) {
+    case "init":
+      return handleInit(args.slice(1));
+    case "validate":
+      return handleValidate();
+    case "show":
+      return handleShow();
+  }
+}
+
+async function handleInit(args: string[]): Promise<void> {
+  const flags = parseFlags(args);
+
+  let input: Record<string, string | undefined>;
+  if (flags.json) {
+    input = JSON.parse(flags.json);
+  } else {
+    input = flags;
+  }
+
+  if (!input.organization || !input.project) {
+    fatal(
+      "Usage: setup init --organization=<url> --project=<name> [--authType=pat|azure-ad] [--storagePath=./data]",
+    );
+  }
+
+  const config = AdoConfigSchema.parse({
+    version: "1.0",
+    azure_devops: {
+      organization: input.organization,
+      project: input.project,
+      auth: {
+        type: input.authType ?? "pat",
+        patEnvVar: input.patEnvVar ?? "ADO_PAT",
+      },
+    },
+    storage: {
+      basePath: input.storagePath ?? "./data",
+      workItemsPath: "work-items",
+      tsgPath: "tsg",
+    },
+    sync: {
+      autoSync: false,
+      pullOnStartup: true,
+      defaultQuery: input.defaultQuery,
+      conflictResolution: "ask",
+    },
+  });
+
+  // Ensure data directories exist
+  const basePath = path.resolve(config.storage.basePath);
+  const workItemsPath = path.resolve(basePath, config.storage.workItemsPath);
+  const tsgPath = path.resolve(basePath, config.storage.tsgPath);
+
+  await fs.mkdir(workItemsPath, { recursive: true });
+  await fs.mkdir(tsgPath, { recursive: true });
+
+  for (const dir of ["epics", "features", "user-stories", "tasks", "bugs"]) {
+    await fs.mkdir(path.join(workItemsPath, dir), { recursive: true });
+  }
+
+  clearConfigCache();
+  await saveConfig(config);
+
+  output({
+    status: "ok",
+    organization: config.azure_devops.organization,
+    project: config.azure_devops.project,
+    auth: config.azure_devops.auth.type,
+    storagePath: config.storage.basePath,
+  });
+}
+
+async function handleValidate(): Promise<void> {
+  let config: AdoConfigOutput;
+  try {
+    config = await loadConfig();
+  } catch {
+    fatal("No configuration found. Run setup init first.");
+  }
+
+  const checks: Array<{ check: string; status: "ok" | "error" | "warning"; detail?: string }> = [];
+
+  checks.push({
+    check: "config",
+    status: "ok",
+    detail: `${config.azure_devops.organization}/${config.azure_devops.project}`,
+  });
+
+  // Check credentials
+  try {
+    const creds = await getCredentials(config);
+    checks.push({ check: "credentials", status: "ok", detail: creds.type });
+  } catch (err) {
+    checks.push({
+      check: "credentials",
+      status: "error",
+      detail: err instanceof Error ? err.message : String(err),
+    });
+    output({ checks, success: false });
+    return;
+  }
+
+  // Test ADO connection
+  try {
+    const azdev = await import("azure-devops-node-api");
+    const creds = await getCredentials(config);
+    const authHandler =
+      creds.type === "pat"
+        ? azdev.getPersonalAccessTokenHandler(creds.token)
+        : azdev.getBearerHandler(creds.token);
+
+    const connection = new azdev.WebApi(
+      config.azure_devops.organization,
+      authHandler,
+    );
+    const coreApi = await connection.getCoreApi();
+    const project = await coreApi.getProject(config.azure_devops.project);
+
+    if (project?.name) {
+      checks.push({ check: "connection", status: "ok", detail: `Project "${project.name}" found` });
+    } else {
+      checks.push({ check: "connection", status: "error", detail: `Project "${config.azure_devops.project}" not found` });
+      output({ checks, success: false });
+      return;
+    }
+  } catch (err) {
+    checks.push({
+      check: "connection",
+      status: "error",
+      detail: err instanceof Error ? err.message : String(err),
+    });
+    output({ checks, success: false });
+    return;
+  }
+
+  // Check storage
+  const basePath = path.resolve(config.storage.basePath);
+  try {
+    await fs.access(basePath);
+    checks.push({ check: "storage", status: "ok", detail: basePath });
+  } catch {
+    checks.push({ check: "storage", status: "warning", detail: `Missing: ${basePath} (will be created on first use)` });
+  }
+
+  output({ checks, success: true });
+}
+
+async function handleShow(): Promise<void> {
+  let config: AdoConfigOutput;
+  try {
+    config = await loadConfig();
+  } catch {
+    fatal("No configuration found. Run setup init first.");
+  }
+
+  let credentialStatus: string;
+  try {
+    const creds = await getCredentials(config);
+    credentialStatus = `${creds.type} token available`;
+  } catch {
+    credentialStatus = "not configured";
+  }
+
+  output({
+    azure_devops: {
+      organization: config.azure_devops.organization,
+      project: config.azure_devops.project,
+      auth: {
+        type: config.azure_devops.auth.type,
+        patEnvVar: config.azure_devops.auth.patEnvVar,
+      },
+    },
+    storage: config.storage,
+    sync: config.sync,
+    credentials: credentialStatus,
+  });
+}

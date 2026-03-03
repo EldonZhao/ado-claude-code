@@ -1,6 +1,6 @@
 # ado-claude-code
 
-MCP server plugin for [Claude Code](https://claude.ai) that integrates with Azure DevOps. Sync work items to local YAML files, plan work item breakdowns with AI, manage troubleshooting guides (TSGs), and leverage AI-assisted diagnostics.
+Claude Code plugin for [Azure DevOps](https://dev.azure.com) integration. Sync work items to local YAML files, plan work item breakdowns with AI, manage troubleshooting guides (TSGs), and leverage AI-assisted diagnostics.
 
 ## Features
 
@@ -26,74 +26,68 @@ export ADO_PAT="your-personal-access-token"
 
 ### 2. Initialize the plugin
 
-Use the `ado_setup` MCP tool with action `init`:
-
-```json
-{
-  "action": "init",
-  "organization": "https://dev.azure.com/your-org",
-  "project": "YourProject",
-  "authType": "pat"
-}
+```bash
+node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --project="YourProject"
 ```
 
 ### 3. Validate connection
 
-```json
-{ "action": "validate" }
+```bash
+node dist/cli.js setup validate
 ```
 
-## MCP Tools (17)
+## Plugin Setup (Claude Code)
 
-### Setup (1)
-| Tool | Description |
-|------|-------------|
-| `ado_setup` | Initialize config, validate connection, show settings |
+Add this project as a Claude Code plugin. The plugin provides:
 
-### Work Items (7)
-| Tool | Description |
-|------|-------------|
-| `ado_work_items_get` | Fetch a single work item from ADO |
-| `ado_work_items_list` | List local work items with filters |
-| `ado_work_items_create` | Create work item in ADO + save locally |
-| `ado_work_items_update` | Update work item in ADO + save locally |
-| `ado_work_items_query` | Run WIQL query against ADO |
-| `ado_work_items_sync` | Bidirectional sync (pull/push/full) |
-| `ado_work_items_plan` | AI-assisted work item breakdown |
+- **6 Slash Commands** — `/ado-sync`, `/ado-plan`, `/ado-query`, `/troubleshoot`, `/tsg-create`, `/ado-setup`
+- **4 Skills** — Domain knowledge for work items, TSGs, troubleshooting, and planning
+- **2 Agents** — Specialist subagents for planning and troubleshooting
+- **1 Rule** — Always-active ADO conventions
 
-### TSG (6)
-| Tool | Description |
-|------|-------------|
-| `tsg_create` | Create a new troubleshooting guide |
-| `tsg_get` | Get TSG content by ID |
-| `tsg_update` | Update an existing TSG |
-| `tsg_list` | List TSGs, optionally by category |
-| `tsg_search` | Search TSGs by symptoms, tags, keywords |
-| `tsg_execute` | Execute a diagnostic step or get resolution |
+## CLI Commands
 
-### Troubleshooting (3)
-| Tool | Description |
-|------|-------------|
-| `troubleshoot_diagnose` | Report symptoms, get matched TSGs and diagnostic steps |
-| `troubleshoot_analyze` | Analyze diagnostic output, identify root causes |
-| `troubleshoot_suggest` | Get resolution steps for an identified root cause |
+All operations use the CLI at `dist/cli.js`. Output is JSON to stdout.
 
-## Usage with Claude Code
+### Setup
+```bash
+node dist/cli.js setup init --organization=<url> --project=<name>
+node dist/cli.js setup validate
+node dist/cli.js setup show
+```
 
-Add to your Claude Code MCP config:
+### Work Items
+```bash
+node dist/cli.js work-items get <id>
+node dist/cli.js work-items list [--type=...] [--state=...] [--assignedTo=...]
+node dist/cli.js work-items create --type=Task --title="Fix bug" [--priority=1]
+node dist/cli.js work-items update <id> [--state=Active] [--priority=2]
+node dist/cli.js work-items query "SELECT [System.Id] FROM WorkItems WHERE ..."
+node dist/cli.js work-items plan <id> [--items='[...]'] [--create]
+```
 
-```json
-{
-  "mcpServers": {
-    "ado-claude-code": {
-      "command": "node",
-      "args": ["path/to/ado-claude-code/dist/index.js"],
-      "env": {
-        "ADO_PAT": "your-pat-token"
-      }
-    }
-  }
-}
+### Sync
+```bash
+node dist/cli.js sync pull [--ids=1,2,3] [--query="SELECT ..."]
+node dist/cli.js sync push [--ids=1,2,3]
+node dist/cli.js sync full --query="SELECT ..."
+```
+
+### TSG
+```bash
+node dist/cli.js tsg create --title="..." --category=deployment
+node dist/cli.js tsg get <id>
+node dist/cli.js tsg update <id> [--title=...] [--tags='[...]']
+node dist/cli.js tsg list [--category=...]
+node dist/cli.js tsg search --query="..." [--symptoms='[...]']
+node dist/cli.js tsg execute <id> [--stepId=...] [--rootCause=...] [--parameters='{...}']
+```
+
+### Troubleshooting
+```bash
+node dist/cli.js troubleshoot diagnose --symptoms='["symptom1","symptom2"]'
+node dist/cli.js troubleshoot analyze --output="<diagnostic output>" [--tsgId=...]
+node dist/cli.js troubleshoot suggest --tsgId=<id> --rootCause=<cause>
 ```
 
 ## Development
@@ -109,13 +103,14 @@ npm run build    # Production build
 
 ```
 src/
-  index.ts              Entry point (stdio transport)
-  server.ts             MCP server, tool registration
-  tools/
-    setup.tool.ts       Setup/validation
-    work-items/         7 work item tools
-    tsg/                6 TSG tools
-    troubleshoot/       3 troubleshooting tools
+  cli.ts                CLI entry point (arg parsing + routing)
+  cli/
+    work-items.ts       Work item handlers
+    sync.ts             Sync handlers
+    tsg.ts              TSG handlers
+    setup.ts            Setup handlers
+    troubleshoot.ts     Troubleshooting handlers
+    helpers.ts          Shared CLI utilities
   services/
     ado/                ADO client, auth
     sync/               Sync engine, mapper, state
@@ -128,6 +123,12 @@ src/
     cache.ts            API response cache
   schemas/              Zod validation schemas
   utils/                Logger, error classes
+
+.claude-plugin/         Plugin manifest
+commands/               Slash commands (6)
+skills/                 Domain knowledge (4)
+agents/                 Specialist subagents (2)
+rules/                  Always-active conventions
 ```
 
 ## License
