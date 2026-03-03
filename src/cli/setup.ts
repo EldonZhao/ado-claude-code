@@ -2,13 +2,13 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { output, fatal, parseFlags } from "./helpers.js";
 import { saveConfig, loadConfig, clearConfigCache } from "../storage/config.js";
-import { getCredentials } from "../services/ado/auth.js";
+import { getCredentials, clearTokenCache } from "../services/ado/auth.js";
 import { AdoConfigSchema, type AdoConfigOutput } from "../schemas/config.schema.js";
 
 export async function handleSetup(args: string[]): Promise<void> {
   const action = args[0];
-  if (!action || !["init", "validate", "show"].includes(action)) {
-    fatal("Usage: setup <init|validate|show> [args]");
+  if (!action || !["init", "validate", "show", "login", "logout"].includes(action)) {
+    fatal("Usage: setup <init|validate|show|login|logout> [args]");
   }
 
   switch (action) {
@@ -18,6 +18,10 @@ export async function handleSetup(args: string[]): Promise<void> {
       return handleValidate();
     case "show":
       return handleShow();
+    case "login":
+      return handleLogin();
+    case "logout":
+      return handleLogout();
   }
 }
 
@@ -43,7 +47,7 @@ async function handleInit(args: string[]): Promise<void> {
       organization: input.organization,
       project: input.project,
       auth: {
-        type: input.authType ?? "pat",
+        type: input.authType ?? "azure-ad",
         patEnvVar: input.patEnvVar ?? "ADO_PAT",
       },
     },
@@ -188,4 +192,44 @@ async function handleShow(): Promise<void> {
     sync: config.sync,
     credentials: credentialStatus,
   });
+}
+
+async function handleLogin(): Promise<void> {
+  let config: AdoConfigOutput;
+  try {
+    config = await loadConfig();
+  } catch {
+    fatal("No configuration found. Run setup init first.");
+  }
+
+  if (config.azure_devops.auth.type === "pat") {
+    fatal(
+      "Auth type is 'pat'. To use browser login, reinitialize with: setup init --authType=azure-ad ...",
+    );
+  }
+
+  // Clear any stale cached token
+  await clearTokenCache();
+
+  // Use az login for browser-based interactive login, then get ADO token
+  try {
+    const { execSync } = await import("node:child_process");
+
+    process.stderr.write("\nRunning 'az login' to open browser for authentication...\n\n");
+    execSync("az login", { stdio: "inherit", timeout: 120000 });
+
+    // Now get an ADO token via AzureCliCredential and cache it
+    const creds = await getCredentials(config);
+    output({ status: "ok", authType: creds.type, message: "Login successful. Token cached for Azure DevOps." });
+  } catch (err) {
+    fatal(
+      `Login failed: ${err instanceof Error ? err.message : String(err)}\n` +
+      "Make sure Azure CLI is installed (https://aka.ms/install-azure-cli) and try again.",
+    );
+  }
+}
+
+async function handleLogout(): Promise<void> {
+  await clearTokenCache();
+  output({ status: "ok", message: "Token cache cleared." });
 }

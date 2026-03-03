@@ -58,22 +58,33 @@ cp -r rules/ /path/to/your-project/.claude/rules/
 
 ## Setup
 
-### 1. Set your Azure DevOps PAT
-
-```bash
-export ADO_PAT="your-personal-access-token"
-```
-
-### 2. Initialize configuration
+### 1. Initialize configuration
 
 ```bash
 node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --project="YourProject"
 ```
 
+### 2. Login
+
+```bash
+node dist/cli.js setup login
+```
+
+This starts a device-code flow — you'll see a URL and code in the terminal. Open the URL in your browser, enter the code, and sign in with your Azure AD account. The token is cached locally so subsequent commands authenticate automatically.
+
 ### 3. Validate connection
 
 ```bash
 node dist/cli.js setup validate
+```
+
+### Alternative: PAT authentication
+
+If you prefer a Personal Access Token instead of browser login:
+
+```bash
+export ADO_PAT="your-personal-access-token"
+node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --project="YourProject" --authType=pat
 ```
 
 ## What's Included
@@ -87,7 +98,7 @@ node dist/cli.js setup validate
 | `/ado-query` | Run WIQL queries or list local items |
 | `/troubleshoot` | Diagnose issues, analyze output, suggest resolutions |
 | `/tsg-create` | Create and manage troubleshooting guides |
-| `/ado-setup` | Initialize, validate, or show configuration |
+| `/ado-setup` | Initialize, validate, login/logout, or show configuration |
 
 ### Skills (4)
 
@@ -121,7 +132,9 @@ node dist/cli.js <domain> <action> [--flags]
 
 ### Setup
 ```bash
-node dist/cli.js setup init --organization=<url> --project=<name>
+node dist/cli.js setup init --organization=<url> --project=<name> [--authType=azure-ad|pat]
+node dist/cli.js setup login
+node dist/cli.js setup logout
 node dist/cli.js setup validate
 node dist/cli.js setup show
 ```

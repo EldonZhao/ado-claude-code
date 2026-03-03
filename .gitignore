@@ -18,6 +18,7 @@ Thumbs.db
 
 # ADO sync state and cache
 data/.ado-sync/
+.ado-token-cache.json
 
 # Coverage
 coverage/
