@@ -1,5 +1,5 @@
 ---
-name: ado-sync
+name: sync
 description: Sync work items between Azure DevOps and local storage
 arguments:
   - name: direction
@@ -55,4 +55,4 @@ Full sync:
 node dist/cli.js sync full --query="SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = @project"
 ```
 
-After syncing, work items are stored as YAML files in `data/work-items/` organized by type (epics, features, user-stories, tasks, bugs).
+After syncing, work items are stored as YAML files in `.claude/data/work-items/` organized by type (epics, features, user-stories, tasks, bugs).
