@@ -1,10 +1,38 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ado-claude-code",
+  "description": "Azure DevOps integration for Claude Code — work item sync, AI planning, TSG management, and troubleshooting",
+  "owner": {
+    "name": "EldonZhao"
+  },
   "plugins": [
     {
       "name": "ado-claude-code",
+      "source": "./",
       "description": "Azure DevOps integration for Claude Code — work item sync, AI planning, TSG management, and troubleshooting",
       "version": "1.0.0",
-      "path": "."
+      "author": {
+        "name": "EldonZhao"
+      },
+      "homepage": "https://github.com/EldonZhao/ado-claude-code",
+      "repository": "https://github.com/EldonZhao/ado-claude-code",
+      "license": "MIT",
+      "keywords": [
+        "azure-devops",
+        "work-items",
+        "tsg",
+        "troubleshooting",
+        "planning",
+        "sync"
+      ],
+      "category": "workflow",
+      "tags": [
+        "azure-devops",
+        "work-items",
+        "tsg",
+        "troubleshooting",
+        "planning"
+      ]
     }
   ]
 }

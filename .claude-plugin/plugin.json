@@ -1,10 +1,19 @@
 {
   "name": "ado-claude-code",
   "version": "1.0.0",
-  "description": "Azure DevOps integration for Claude Code",
-  "skills": ["skills/*/SKILL.md"],
-  "agents": [
-    "agents/ado-planner.md",
-    "agents/ado-troubleshooter.md"
+  "description": "Azure DevOps integration for Claude Code — work item sync, AI planning, TSG management, and troubleshooting",
+  "author": {
+    "name": "EldonZhao"
+  },
+  "homepage": "https://github.com/EldonZhao/ado-claude-code",
+  "repository": "https://github.com/EldonZhao/ado-claude-code",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "azure-devops",
+    "work-items",
+    "tsg",
+    "troubleshooting",
+    "planning"
   ]
 }
