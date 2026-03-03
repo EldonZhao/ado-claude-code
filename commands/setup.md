@@ -1,5 +1,5 @@
 ---
-name: setup
+name: ado-claude-code:setup
 description: Initialize, validate, login, logout, or show Azure DevOps configuration
 arguments:
   - name: action

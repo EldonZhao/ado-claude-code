@@ -1,5 +1,5 @@
 ---
-name: plan
+name: ado-claude-code:plan
 description: Break down an Azure DevOps work item into child items using AI-assisted planning
 arguments:
   - name: id

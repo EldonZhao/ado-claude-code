@@ -1,5 +1,5 @@
 ---
-name: sync
+name: ado-claude-code:sync
 description: Sync work items between Azure DevOps and local storage
 arguments:
   - name: direction

@@ -1,5 +1,5 @@
 ---
-name: troubleshoot
+name: ado-claude-code:troubleshoot
 description: Diagnose issues, analyze output, and suggest resolutions using TSGs
 arguments:
   - name: action

@@ -1,5 +1,5 @@
 ---
-name: tsg-create
+name: ado-claude-code:tsg-create
 description: Create or manage Troubleshooting Guides (TSGs)
 arguments:
   - name: action
