@@ -5,6 +5,7 @@ import { AdoConfigSchema, type AdoConfigOutput } from "../schemas/config.schema.
 import { ConfigError } from "../utils/errors.js";
 import { logger } from "../utils/logger.js";
 
+const CONFIG_DIR = ".claude";
 const CONFIG_FILENAME = ".ado-config.yaml";
 
 let cachedConfig: AdoConfigOutput | null = null;
@@ -13,7 +14,7 @@ let configPath: string | null = null;
 export function getConfigPath(basePath?: string): string {
   if (configPath) return configPath;
   const base = basePath ?? process.cwd();
-  return path.join(base, CONFIG_FILENAME);
+  return path.join(base, CONFIG_DIR, CONFIG_FILENAME);
 }
 
 export async function loadConfig(basePath?: string): Promise<AdoConfigOutput> {
@@ -55,6 +56,7 @@ export async function saveConfig(
   basePath?: string,
 ): Promise<void> {
   const filePath = getConfigPath(basePath);
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
   const yamlStr = stringifyYaml(config, { lineWidth: 120 });
   await fs.writeFile(filePath, yamlStr, "utf-8");
   cachedConfig = config;

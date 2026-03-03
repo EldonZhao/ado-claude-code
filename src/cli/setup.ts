@@ -37,7 +37,7 @@ async function handleInit(args: string[]): Promise<void> {
 
   if (!input.organization || !input.project) {
     fatal(
-      "Usage: setup init --organization=<url> --project=<name> [--authType=pat|azure-ad] [--storagePath=./data]",
+      "Usage: setup init --organization=<url> --project=<name> [--authType=pat|azure-ad] [--storagePath=./.claude/data]",
     );
   }
 
@@ -52,7 +52,7 @@ async function handleInit(args: string[]): Promise<void> {
       },
     },
     storage: {
-      basePath: input.storagePath ?? "./data",
+      basePath: input.storagePath ?? "./.claude/data",
       workItemsPath: "work-items",
       tsgPath: "tsg",
     },

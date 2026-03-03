@@ -17,7 +17,7 @@ Domains: `work-items`, `sync`, `tsg`, `setup`, `troubleshoot`
 
 ## Work Item YAML Format
 
-Local work items are stored in `data/work-items/<type>/<id>.yaml`:
+Local work items are stored in `.claude/data/work-items/<type>/<id>.yaml`:
 
 ```yaml
 id: 1234
@@ -46,11 +46,11 @@ syncedAt: "2025-01-01T00:00:00.000Z"
 
 - TSG IDs: `tsg-{category}-{number}` (e.g., `tsg-deployment-001`)
 - Work item files: `{id}.yaml` in type-specific subdirectories
-- Config file: `.ado-config.yaml` in project root
+- Config file: `.claude/.ado-config.yaml` in project root
 
 ## Environment Variables
 
-- `ADO_PAT` — Personal Access Token (required)
+- `ADO_PAT` — Personal Access Token (only if authType=pat)
 - `ADO_ORG` — Organization URL (overrides config)
 - `ADO_PROJECT` — Project name (overrides config)
 - `LOG_LEVEL` — debug | info | warn | error (default: warn)

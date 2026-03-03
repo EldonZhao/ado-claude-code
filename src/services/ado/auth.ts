@@ -12,7 +12,8 @@ export interface Credentials {
 // Azure DevOps resource ID used for token scopes
 const ADO_SCOPE = "499b84ac-1321-427f-aa17-267ca6975798/.default";
 
-// Token cache file location (next to .ado-config.yaml)
+// Token cache file location (under .claude/ directory)
+const TOKEN_CACHE_DIR = ".claude";
 const TOKEN_CACHE_FILE = ".ado-token-cache.json";
 
 interface CachedToken {
@@ -21,7 +22,7 @@ interface CachedToken {
 }
 
 async function getTokenCachePath(): Promise<string> {
-  return path.join(process.cwd(), TOKEN_CACHE_FILE);
+  return path.join(process.cwd(), TOKEN_CACHE_DIR, TOKEN_CACHE_FILE);
 }
 
 async function loadCachedToken(): Promise<CachedToken | null> {
@@ -42,6 +43,7 @@ async function loadCachedToken(): Promise<CachedToken | null> {
 async function saveCachedToken(token: CachedToken): Promise<void> {
   try {
     const cachePath = await getTokenCachePath();
+    await fs.mkdir(path.dirname(cachePath), { recursive: true });
     await fs.writeFile(cachePath, JSON.stringify(token, null, 2), "utf-8");
   } catch (err) {
     logger.warn({ err }, "Failed to cache token");

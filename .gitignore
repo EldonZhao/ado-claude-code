@@ -16,9 +16,11 @@ dist/
 .DS_Store
 Thumbs.db
 
-# ADO sync state and cache
-data/.ado-sync/
-.ado-token-cache.json
+# ADO config, token cache, and synced work items
+.claude/.ado-config.yaml
+.claude/.ado-token-cache.json
+.claude/data/work-items/
+.claude/data/.ado-sync/
 
 # Coverage
 coverage/

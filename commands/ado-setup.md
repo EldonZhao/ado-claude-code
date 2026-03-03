@@ -23,7 +23,7 @@ Configure the Azure DevOps integration.
 node dist/cli.js setup init --organization="https://dev.azure.com/myorg" --project="MyProject"
 ```
 
-This creates `.ado-config.yaml` and the data directories. Default auth type is `azure-ad` (browser login). Use `--authType=pat` to use a Personal Access Token instead.
+This creates `.claude/.ado-config.yaml` and the data directories under `.claude/data/`. Default auth type is `azure-ad` (browser login). Use `--authType=pat` to use a Personal Access Token instead.
 
 ## Login (Azure AD)
 
@@ -61,7 +61,7 @@ Displays current organization, project, auth method, and storage paths.
 
 ### Azure AD (default, recommended)
 
-No setup required beyond `init`. On first use, a device-code login prompt will appear. The token is cached to `.ado-token-cache.json`.
+No setup required beyond `init`. On first use, a device-code login prompt will appear. The token is cached to `.claude/.ado-token-cache.json`.
 
 If you have the Azure CLI installed, cached `az` tokens are used automatically.
 
@@ -74,4 +74,4 @@ export ADO_PAT="your-pat-token"
 
 ## Config file
 
-Configuration is stored in `.ado-config.yaml` in the project root. The setup command manages this file automatically.
+Configuration is stored in `.claude/.ado-config.yaml` in the project root. The setup command manages this file automatically.
