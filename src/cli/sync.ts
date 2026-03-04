@@ -7,7 +7,7 @@ import { SyncEngine, type SyncResult } from "../services/sync/engine.js";
 export async function handleSync(args: string[]): Promise<void> {
   const action = args[0];
   if (!action || !["pull", "push", "full"].includes(action)) {
-    fatal("Usage: sync <pull|push|full> [--ids=1,2,3] [--query=<wiql>] [--mine]");
+    fatal("Usage: sync <pull|push|full> [--ids=1,2,3] [--query=<wiql>] [--mine] [--all]");
   }
 
   const flags = parseFlags(args.slice(1));
@@ -15,14 +15,22 @@ export async function handleSync(args: string[]): Promise<void> {
     ? flags.ids.split(",").map((s) => parseInt(s.trim(), 10))
     : undefined;
   const mine = flags.mine !== undefined;
+  const all = flags.all !== undefined;
 
   if (mine && flags.query) {
     fatal("Cannot use --mine and --query together. Use one or the other.");
   }
+  if (all && (mine || flags.query)) {
+    fatal("Cannot use --all with --mine or --query.");
+  }
 
   const needsQuery = action === "pull" || action === "full";
-  const useMyItems = mine || (needsQuery && !flags.query && !ids);
-  const query = useMyItems ? buildMyActiveItemsQuery() : flags.query;
+  const useMyItems = mine || (needsQuery && !flags.query && !ids && !all);
+  const query = all
+    ? buildMyAllItemsQuery()
+    : useMyItems
+      ? buildMyActiveItemsQuery()
+      : flags.query;
 
   const engine = await createSyncEngine();
 
@@ -70,6 +78,14 @@ function buildMyActiveItemsQuery(): string {
     "  AND [System.State] <> 'Closed'",
     "  AND [System.State] <> 'Removed'",
     "  AND [System.State] <> 'Completed'",
+    "ORDER BY [System.ChangedDate] DESC",
+  ].join(" ");
+}
+
+function buildMyAllItemsQuery(): string {
+  return [
+    "SELECT [System.Id] FROM WorkItems",
+    "WHERE [System.AssignedTo] = @me",
     "ORDER BY [System.ChangedDate] DESC",
   ].join(" ");
 }
