@@ -37,7 +37,7 @@ export function adoToLocal(item: AdoWorkItem): LocalWorkItemOutput {
       (f["Microsoft.VSTS.Scheduling.StoryPoints"] as number) ?? undefined,
     parent: (f["System.Parent"] as number) ?? undefined,
     children: children.length > 0 ? children : undefined,
-    description: (f["System.Description"] as string) ?? undefined,
+    description: (f["System.Description"] as string) ?? "",
   };
 }
 

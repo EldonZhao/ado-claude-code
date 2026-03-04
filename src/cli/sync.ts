@@ -78,6 +78,7 @@ function buildMyActiveItemsQuery(): string {
     "  AND [System.State] <> 'Closed'",
     "  AND [System.State] <> 'Removed'",
     "  AND [System.State] <> 'Completed'",
+    "  AND [System.State] <> 'Done'",
     "ORDER BY [System.ChangedDate] DESC",
   ].join(" ");
 }

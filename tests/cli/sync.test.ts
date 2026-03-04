@@ -72,6 +72,7 @@ const MY_ITEMS_QUERY =
   "  AND [System.State] <> 'Closed' " +
   "  AND [System.State] <> 'Removed' " +
   "  AND [System.State] <> 'Completed' " +
+  "  AND [System.State] <> 'Done' " +
   "ORDER BY [System.ChangedDate] DESC";
 
 const MY_ALL_ITEMS_QUERY =
@@ -232,10 +233,11 @@ describe("handleSync CLI handler", () => {
   });
 
   describe("Completed state exclusion in query", () => {
-    it("the default query excludes Completed, Closed, and Removed states", () => {
+    it("the default query excludes Completed, Closed, Removed, and Done states", () => {
       expect(MY_ITEMS_QUERY).toContain("[System.State] <> 'Completed'");
       expect(MY_ITEMS_QUERY).toContain("[System.State] <> 'Closed'");
       expect(MY_ITEMS_QUERY).toContain("[System.State] <> 'Removed'");
+      expect(MY_ITEMS_QUERY).toContain("[System.State] <> 'Done'");
     });
   });
 
