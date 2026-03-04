@@ -1,5 +1,5 @@
 ---
-name: ado-claude-code:plan
+name: ado-claude-code:code-plan
 description: Generate a code implementation plan from an Azure DevOps work item
 arguments:
   - name: id

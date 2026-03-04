@@ -55,4 +55,4 @@ node dist/cli.js work-items task-plan 1234 --items='[...]' --create
 
 ## See Also
 
-Use `/plan` to generate a code implementation plan for any work item type.
+Use `/code-plan` to generate a code implementation plan for any work item type.

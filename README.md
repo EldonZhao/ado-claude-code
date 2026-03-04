@@ -94,7 +94,7 @@ node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --pr
 | Command | Description |
 |---------|-------------|
 | `/sync` | Pull/push/full sync work items with Azure DevOps |
-| `/plan` | Generate a code implementation plan from a work item |
+| `/code-plan` | Generate a code implementation plan from a work item |
 | `/task-plan` | AI-assisted work item hierarchy breakdown |
 | `/query` | Run WIQL queries or list local items |
 | `/troubleshoot` | Diagnose issues, analyze output, suggest resolutions |
