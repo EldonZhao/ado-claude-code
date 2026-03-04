@@ -28,6 +28,7 @@ node dist/cli.js <domain> <action> [--flags]
 - `setup` — init, validate, show, login, logout
 - `work-items` — get, list, create, update, query, plan
 - `sync` — pull, push, full
+- `clear` — [--confirm]
 - `tsg` — create, get, update, list, search, execute
 - `troubleshoot` — diagnose, analyze, suggest
 
@@ -36,6 +37,7 @@ node dist/cli.js <domain> <action> [--flags]
 - `src/cli/` — CLI handler modules
   - `work-items.ts` — Work item CRUD, query, plan
   - `sync.ts` — Bidirectional sync
+  - `clear.ts` — Clear synced work items
   - `tsg.ts` — TSG CRUD, search, execute
   - `setup.ts` — Config init/validate/show
   - `troubleshoot.ts` — Diagnose, analyze, suggest
@@ -53,7 +55,7 @@ node dist/cli.js <domain> <action> [--flags]
 
 ## Plugin Structure
 - `.claude-plugin/plugin.json` — Plugin manifest
-- `commands/*.md` — Slash commands (6)
+- `commands/*.md` — Slash commands (7)
 - `skills/*/SKILL.md` — Domain knowledge (4)
 - `agents/*.md` — Specialist subagents (2)
 - `rules/*.md` — Always-active conventions
@@ -72,5 +74,6 @@ node dist/cli.js <domain> <action> [--flags]
 ## Testing
 Tests live in `tests/` and use vitest. Run with `npm test`.
 - `tests/utils/` — Error class tests
-- `tests/services/` — TSG executor, TSG search, sync mapper, planning tests
+- `tests/services/` — TSG executor, TSG search, sync mapper, sync engine, planning tests
+- `tests/cli/` — CLI handler tests (clear)
 - `tests/storage/` — Cache tests
