@@ -89,12 +89,13 @@ node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --pr
 
 ## What's Included
 
-### Slash Commands (6)
+### Slash Commands (7)
 
 | Command | Description |
 |---------|-------------|
 | `/sync` | Pull/push/full sync work items with Azure DevOps |
-| `/plan` | AI-assisted work item breakdown |
+| `/plan` | Generate a code implementation plan from a work item |
+| `/task-plan` | AI-assisted work item hierarchy breakdown |
 | `/query` | Run WIQL queries or list local items |
 | `/troubleshoot` | Diagnose issues, analyze output, suggest resolutions |
 | `/tsg-create` | Create and manage troubleshooting guides |
@@ -146,7 +147,8 @@ node dist/cli.js work-items list [--type=...] [--state=...] [--assignedTo=...]
 node dist/cli.js work-items create --type=Task --title="Fix bug" [--priority=1]
 node dist/cli.js work-items update <id> [--state=Active] [--priority=2]
 node dist/cli.js work-items query "SELECT [System.Id] FROM WorkItems WHERE ..."
-node dist/cli.js work-items plan <id> [--items='[...]'] [--create]
+node dist/cli.js work-items plan <id>
+node dist/cli.js work-items task-plan <id> [--items='[...]'] [--create]
 ```
 
 ### Sync
@@ -204,7 +206,7 @@ src/
   utils/                Logger, error classes
 
 .claude-plugin/         Plugin manifest + marketplace catalog
-commands/               Slash commands (6)
+commands/               Slash commands (7)
 skills/                 Domain knowledge (4)
 agents/                 Specialist subagents (2)
 rules/                  Always-active conventions

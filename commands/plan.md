@@ -1,54 +1,37 @@
 ---
 name: ado-claude-code:plan
-description: Break down an Azure DevOps work item into child items using AI-assisted planning
+description: Generate a code implementation plan from an Azure DevOps work item
 arguments:
   - name: id
-    description: "Parent work item ID to break down"
+    description: "Work item ID to generate a code plan for"
     required: true
-  - name: items
-    description: "JSON array of proposed child items (optional — omit to get guidance)"
-    required: false
-  - name: create
-    description: "Whether to create items in ADO (true/false, default: false)"
-    required: false
 ---
 
-# ADO Work Item Planning
+# ADO Code Plan
 
-AI-assisted breakdown of work items following the ADO hierarchy: Epic -> Feature -> User Story -> Task.
+Generate a code implementation plan from any Azure DevOps work item. Works for all work item types: Epic, Feature, User Story, Task, and Bug.
 
 ## Usage
 
-### Step 1: Get guidance for breaking down a work item
-
 ```bash
-node dist/cli.js work-items plan 1234
+node dist/cli.js work-items plan <id>
 ```
 
-This fetches the parent work item and returns guidance on how to break it down.
+This fetches the work item and returns structured guidance for Claude to analyze the codebase and produce an implementation plan including:
 
-### Step 2: Preview a breakdown proposal
+1. **Files to analyze** — Existing files relevant to the change
+2. **Architectural approach** — How the change fits the codebase
+3. **Files to modify or create** — Specific files with change summaries
+4. **Step-by-step changes** — Ordered implementation steps
+5. **Testing suggestions** — Unit, integration, or manual verification
+6. **Edge cases and risks** — Potential issues and gotchas
+
+## Example
 
 ```bash
-node dist/cli.js work-items plan 1234 --items='[{"type":"User Story","title":"As a user, I want...","description":"...","priority":2}]'
+node dist/cli.js work-items plan 415156
 ```
 
-### Step 3: Create the items in ADO
+## See Also
 
-```bash
-node dist/cli.js work-items plan 1234 --items='[...]' --create
-```
-
-## Hierarchy
-
-- **Epic** breaks down into **Features**
-- **Feature** breaks down into **User Stories**
-- **User Story** breaks down into **Tasks**
-- **Bug** breaks down into **Tasks**
-
-## Workflow
-
-1. Call without `--items` to get guidance and the parent work item context
-2. Use the guidance to propose child items
-3. Call with `--items` to preview the proposal
-4. Call with `--items --create` to create them in Azure DevOps
+Use `/task-plan` to break down a work item into child items following the ADO hierarchy (Epic → Feature → User Story → Task).

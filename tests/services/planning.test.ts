@@ -165,7 +165,7 @@ describe("getBreakdownGuidance", () => {
     const guidance = getBreakdownGuidance(parent);
     expect(guidance).toContain("Break down this Epic into Feature(s)");
     expect(guidance).toContain("#100");
-    expect(guidance).toContain("ado_work_items_plan");
+    expect(guidance).toContain("ado_work_items_task_plan");
   });
 
   it("includes description when available", () => {

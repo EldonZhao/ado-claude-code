@@ -20,7 +20,7 @@ description: Work item breakdown hierarchy, estimation guidance, and planning be
 Get the full context of the item to break down — title, description, acceptance criteria.
 
 ### Step 2: Get guidance
-Call the plan command without items to receive hierarchy-specific guidance and the parent's details.
+Call the task-plan command without items to receive hierarchy-specific guidance and the parent's details.
 
 ### Step 3: Generate proposal
 Create child items based on the guidance. Each item needs:
@@ -31,7 +31,7 @@ Create child items based on the guidance. Each item needs:
 - **storyPoints** — Effort estimate (optional)
 
 ### Step 4: Preview
-Call the plan command with items but without --create to validate and preview.
+Call the task-plan command with items but without --create to validate and preview.
 
 ### Step 5: Create in ADO
 Call with --create to create the items in Azure DevOps with parent links.

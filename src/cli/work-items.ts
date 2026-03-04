@@ -7,11 +7,12 @@ import {
   getBreakdownGuidance,
   type PlannedItem,
 } from "../services/planning/breakdown.js";
+import { getCodePlanGuidance } from "../services/planning/code-plan.js";
 
 export async function handleWorkItems(args: string[]): Promise<void> {
   const action = args[0];
   if (!action) {
-    fatal("Usage: work-items <get|list|create|update|query|plan> [args]");
+    fatal("Usage: work-items <get|list|create|update|query|plan|task-plan> [args]");
   }
 
   switch (action) {
@@ -27,8 +28,10 @@ export async function handleWorkItems(args: string[]): Promise<void> {
       return handleQuery(args.slice(1));
     case "plan":
       return handlePlan(args.slice(1));
+    case "task-plan":
+      return handleTaskPlan(args.slice(1));
     default:
-      fatal(`Unknown work-items action: ${action}. Use get|list|create|update|query|plan`);
+      fatal(`Unknown work-items action: ${action}. Use get|list|create|update|query|plan|task-plan`);
   }
 }
 
@@ -179,7 +182,26 @@ async function handleQuery(args: string[]): Promise<void> {
 async function handlePlan(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
-  if (!idStr) fatal("Usage: work-items plan <id> [--items=<json>] [--create]");
+  if (!idStr) fatal("Usage: work-items plan <id>");
+
+  const id = parseInt(idStr, 10);
+  if (isNaN(id)) fatal(`Invalid work item ID: ${idStr}`);
+
+  const client = await getAdoClient();
+  const storage = await getWorkItemStorage();
+
+  const adoItem = await client.getWorkItem(id, "relations");
+  const item = mapAdoToLocal(adoItem);
+  await storage.save(item);
+
+  const guidance = getCodePlanGuidance(item);
+  output({ parent: { id: item.id, type: item.type, title: item.title }, codePlan: guidance });
+}
+
+async function handleTaskPlan(args: string[]): Promise<void> {
+  const flags = parseFlags(args);
+  const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
+  if (!idStr) fatal("Usage: work-items task-plan <id> [--items=<json>] [--create]");
 
   const id = parseInt(idStr, 10);
   if (isNaN(id)) fatal(`Invalid work item ID: ${idStr}`);

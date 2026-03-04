@@ -128,7 +128,7 @@ export function getBreakdownGuidance(
       ? `Description:\n${parent.description}\n\n`
       : "\n") +
     `Guidelines for ${childType}:\n${guidelines[childType] ?? "Create appropriate child items."}\n\n` +
-    `Return your proposal by calling ado_work_items_plan with:\n` +
+    `Return your proposal by calling ado_work_items_task_plan with:\n` +
     `- id: ${parent.id}\n` +
     `- items: array of {title, description, priority?, storyPoints?}\n` +
     `- createInAdo: true (to create) or false (preview only)`
