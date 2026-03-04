@@ -1,5 +1,7 @@
-import { getAdoClient, mapAdoToLocal, formatWorkItemSummary, output, fatal, parseFlags } from "./helpers.js";
+import { getAdoClient, getSyncStateManager, mapAdoToLocal, formatWorkItemSummary, output, fatal, parseFlags } from "./helpers.js";
 import { getWorkItemStorage } from "../storage/index.js";
+import { SyncStateManager } from "../services/sync/state.js";
+import { serializeForHash } from "../services/sync/mapper.js";
 import { HIERARCHY } from "../services/planning/templates.js";
 import {
   createBreakdownProposal,
@@ -8,6 +10,34 @@ import {
   type PlannedItem,
 } from "../services/planning/breakdown.js";
 import { getCodePlanGuidance } from "../services/planning/code-plan.js";
+import type { WorkItemStorage } from "../storage/work-items.js";
+import type { LocalWorkItemOutput } from "../schemas/work-item.schema.js";
+
+/**
+ * Save a work item to local storage AND register it in sync state,
+ * so that `clear` can find and remove it later.
+ */
+async function saveAndTrack(
+  storage: WorkItemStorage,
+  item: LocalWorkItemOutput,
+): Promise<string> {
+  const filePath = await storage.save(item);
+  try {
+    const stateManager = await getSyncStateManager();
+    const hash = SyncStateManager.computeHash(serializeForHash(item));
+    await stateManager.setItemState(item.id, {
+      localPath: filePath,
+      adoRev: item.rev,
+      localHash: hash,
+      lastSyncedAt: new Date().toISOString(),
+      syncStatus: "synced",
+    });
+    await stateManager.save();
+  } catch {
+    // Non-blocking: if sync state fails, the file is still saved
+  }
+  return filePath;
+}
 
 export async function handleWorkItems(args: string[]): Promise<void> {
   const action = args[0];
@@ -50,7 +80,7 @@ async function handleGet(args: string[]): Promise<void> {
 
   if (flags.save !== "false" && flags["no-save"] !== "true") {
     const storage = await getWorkItemStorage();
-    await storage.save(localItem);
+    await saveAndTrack(storage, localItem);
   }
 
   output(localItem);
@@ -83,7 +113,7 @@ async function handleCreate(args: string[]): Promise<void> {
     const adoItem = await client.createWorkItem(data);
     const localItem = mapAdoToLocal(adoItem);
     const storage = await getWorkItemStorage();
-    await storage.save(localItem);
+    await saveAndTrack(storage, localItem);
     output(localItem);
     return;
   }
@@ -108,7 +138,7 @@ async function handleCreate(args: string[]): Promise<void> {
 
   const localItem = mapAdoToLocal(adoItem);
   const storage = await getWorkItemStorage();
-  await storage.save(localItem);
+  await saveAndTrack(storage, localItem);
   output(localItem);
 }
 
@@ -128,7 +158,7 @@ async function handleUpdate(args: string[]): Promise<void> {
     const adoItem = await client.updateWorkItem(data);
     const localItem = mapAdoToLocal(adoItem);
     const storage = await getWorkItemStorage();
-    await storage.save(localItem);
+    await saveAndTrack(storage, localItem);
     output(localItem);
     return;
   }
@@ -155,7 +185,7 @@ async function handleUpdate(args: string[]): Promise<void> {
       customFields: flags.customFields ? JSON.parse(flags.customFields) : undefined,
     });
     localItem = mapAdoToLocal(adoItem);
-    await storage.save(localItem);
+    await saveAndTrack(storage, localItem);
   }
 
   // Add comment if provided
@@ -165,7 +195,7 @@ async function handleUpdate(args: string[]): Promise<void> {
       // Comment-only update: fetch current item for output
       const adoItem = await client.getWorkItem(id, "relations");
       localItem = mapAdoToLocal(adoItem);
-      await storage.save(localItem);
+      await saveAndTrack(storage, localItem);
     }
     output({ ...localItem, commentAdded: { id: commentResult.id, text: commentResult.text } });
     return;
@@ -197,7 +227,7 @@ async function handleQuery(args: string[]): Promise<void> {
   if (flags.save === "true" || flags.save === "") {
     const storage = await getWorkItemStorage();
     for (const item of localItems) {
-      await storage.save(item);
+      await saveAndTrack(storage, item);
     }
   }
 
@@ -221,7 +251,7 @@ async function handlePlan(args: string[]): Promise<void> {
 
   const adoItem = await client.getWorkItem(id, "relations");
   let item = mapAdoToLocal(adoItem);
-  await storage.save(item);
+  await saveAndTrack(storage, item);
 
   const guidance = getCodePlanGuidance(item);
 
@@ -237,7 +267,7 @@ async function handlePlan(args: string[]): Promise<void> {
         previousState = item.state;
         const updatedAdo = await client.updateWorkItem({ id, state: "In Progress" });
         item = mapAdoToLocal(updatedAdo);
-        await storage.save(item);
+        await saveAndTrack(storage, item);
         stateChanged = true;
       } catch (err) {
         process.stderr.write(`Warning: Failed to update state: ${err}\n`);
@@ -279,7 +309,7 @@ async function handleTaskPlan(args: string[]): Promise<void> {
   // Fetch parent
   const adoParent = await client.getWorkItem(id, "relations");
   const parent = mapAdoToLocal(adoParent);
-  await storage.save(parent);
+  await saveAndTrack(storage, parent);
 
   const childTypes = HIERARCHY[parent.type];
   if (childTypes.length === 0) {
@@ -315,7 +345,7 @@ async function handleTaskPlan(args: string[]): Promise<void> {
       parentId: parent.id,
     });
     const local = mapAdoToLocal(adoItem);
-    await storage.save(local);
+    await saveAndTrack(storage, local);
     created.push({ id: local.id, type: local.type, title: local.title, parentId: parent.id });
 
     if (item.children && item.children.length > 0) {
@@ -330,7 +360,7 @@ async function handleTaskPlan(args: string[]): Promise<void> {
             parentId: adoItem.id,
           });
           const childLocal = mapAdoToLocal(childAdo);
-          await storage.save(childLocal);
+          await saveAndTrack(storage, childLocal);
           created.push({ id: childLocal.id, type: childLocal.type, title: childLocal.title, parentId: adoItem.id });
         } catch (err) {
           process.stderr.write(`Warning: Failed to create child "${child.title}": ${err}\n`);

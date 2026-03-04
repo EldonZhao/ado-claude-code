@@ -3,9 +3,11 @@ import type { AdoWorkItem } from "../services/ado/types.js";
 import type { AdoConfigOutput } from "../schemas/config.schema.js";
 import type { LocalWorkItemOutput } from "../schemas/work-item.schema.js";
 import { adoToLocal } from "../services/sync/mapper.js";
+import { SyncStateManager } from "../services/sync/state.js";
 import { loadConfig } from "../storage/config.js";
 
 let clientInstance: AdoClient | null = null;
+let syncStateInstance: SyncStateManager | null = null;
 
 export async function getAdoClient(
   configOverride?: AdoConfigOutput,
@@ -14,6 +16,19 @@ export async function getAdoClient(
   const config = configOverride ?? (await loadConfig());
   clientInstance = new AdoClient(config);
   return clientInstance;
+}
+
+export async function getSyncStateManager(
+  configOverride?: AdoConfigOutput,
+): Promise<SyncStateManager> {
+  if (syncStateInstance) return syncStateInstance;
+  const config = configOverride ?? (await loadConfig());
+  syncStateInstance = new SyncStateManager(
+    config.storage.basePath,
+    config.azure_devops.organization,
+    config.azure_devops.project,
+  );
+  return syncStateInstance;
 }
 
 export function mapAdoToLocal(item: AdoWorkItem): LocalWorkItemOutput {
