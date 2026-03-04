@@ -18,6 +18,7 @@ export interface SyncResult {
 export interface PullOptions {
   query?: string;
   ids?: number[];
+  pushFirst?: boolean;
 }
 
 export interface PushOptions {
@@ -36,6 +37,17 @@ export class SyncEngine {
    */
   async pullFromAdo(options: PullOptions = {}): Promise<SyncResult> {
     const result: SyncResult = { pulled: 0, pushed: 0, conflicts: 0, errors: [] };
+
+    // Push locally modified items first to avoid overwriting local edits
+    if (options.pushFirst) {
+      const modified = await this.detectLocalChanges();
+      if (modified > 0) {
+        const pushResult = await this.pushToAdo();
+        result.pushed = pushResult.pushed;
+        result.conflicts = pushResult.conflicts;
+        result.errors.push(...pushResult.errors);
+      }
+    }
 
     let adoItems: AdoWorkItem[];
 
@@ -255,23 +267,16 @@ export class SyncEngine {
    * Full bidirectional sync: pull, detect local changes, resolve conflicts, push.
    */
   async fullSync(query: string): Promise<SyncResult> {
-    const result: SyncResult = { pulled: 0, pushed: 0, conflicts: 0, errors: [] };
+    // Pull (with push-first) handles: detect local changes → push → pull
+    const result = await this.pullFromAdo({ query, pushFirst: true });
 
-    // Step 1: Detect locally modified items before pulling
-    await this.detectLocalChanges();
-
-    // Step 2: Pull from ADO
-    const pullResult = await this.pullFromAdo({ query });
-    result.pulled = pullResult.pulled;
-    result.errors.push(...pullResult.errors);
-
-    // Step 3: Push local modifications
+    // Push any remaining local-only items that weren't covered by the pull query
     const pushResult = await this.pushToAdo();
-    result.pushed = pushResult.pushed;
+    result.pushed += pushResult.pushed;
     result.conflicts += pushResult.conflicts;
     result.errors.push(...pushResult.errors);
 
-    // Step 4: Update full sync timestamp
+    // Update full sync timestamp
     await this.stateManager.setLastFullSync(new Date().toISOString());
     await this.stateManager.save();
 

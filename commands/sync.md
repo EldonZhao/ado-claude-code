@@ -11,6 +11,9 @@ arguments:
   - name: query
     description: "WIQL query for pull/full (optional)"
     required: false
+  - name: mine
+    description: "Sync active items assigned to the current user (optional)"
+    required: false
 ---
 
 # ADO Work Item Sync
@@ -22,16 +25,22 @@ Synchronize work items between Azure DevOps and local YAML storage.
 Run the sync CLI to pull, push, or perform a full bidirectional sync.
 
 ```bash
-node dist/cli.js sync pull [--ids=1234,5678] [--query="SELECT ..."]
+node dist/cli.js sync pull [--ids=1234,5678] [--query="SELECT ..."] [--mine]
 node dist/cli.js sync push [--ids=1234,5678]
-node dist/cli.js sync full [--query="SELECT ..."]
+node dist/cli.js sync full [--query="SELECT ..."] [--mine]
 ```
 
 ## Directions
 
-- **pull** — Download work items from Azure DevOps to local YAML files. Requires `--ids` or `--query`.
+- **pull** — Download work items from Azure DevOps to local YAML files. Requires `--ids`, `--query`, or `--mine`. Automatically pushes locally modified items first to prevent overwriting local edits.
 - **push** — Upload locally modified work items to Azure DevOps. Optionally filter with `--ids`.
-- **full** — Bidirectional sync: pull then push. Requires `--query`.
+- **full** — Bidirectional sync: push local changes then pull. Requires `--query` or `--mine`.
+
+## Flags
+
+- `--ids=1234,5678` — Comma-separated work item IDs to sync.
+- `--query="SELECT ..."` — WIQL query to select items for pull/full.
+- `--mine` — Shorthand for pulling all active (non-Closed, non-Removed) items assigned to the current user. Cannot be combined with `--query`.
 
 ## Examples
 
@@ -45,12 +54,22 @@ Pull all active items:
 node dist/cli.js sync pull --query="SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'Active'"
 ```
 
+Pull my active items:
+```bash
+node dist/cli.js sync pull --mine
+```
+
 Push all local changes:
 ```bash
 node dist/cli.js sync push
 ```
 
-Full sync:
+Full sync for my items:
+```bash
+node dist/cli.js sync full --mine
+```
+
+Full sync with custom query:
 ```bash
 node dist/cli.js sync full --query="SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = @project"
 ```

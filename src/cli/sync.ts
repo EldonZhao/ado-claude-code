@@ -7,14 +7,20 @@ import { SyncEngine, type SyncResult } from "../services/sync/engine.js";
 export async function handleSync(args: string[]): Promise<void> {
   const action = args[0];
   if (!action || !["pull", "push", "full"].includes(action)) {
-    fatal("Usage: sync <pull|push|full> [--ids=1,2,3] [--query=<wiql>]");
+    fatal("Usage: sync <pull|push|full> [--ids=1,2,3] [--query=<wiql>] [--mine]");
   }
 
   const flags = parseFlags(args.slice(1));
   const ids = flags.ids
     ? flags.ids.split(",").map((s) => parseInt(s.trim(), 10))
     : undefined;
-  const query = flags.query;
+  const mine = flags.mine !== undefined;
+
+  if (mine && flags.query) {
+    fatal("Cannot use --mine and --query together. Use one or the other.");
+  }
+
+  const query = mine ? buildMyActiveItemsQuery() : flags.query;
 
   const engine = await createSyncEngine();
 
@@ -22,14 +28,14 @@ export async function handleSync(args: string[]): Promise<void> {
 
   switch (action) {
     case "pull":
-      result = await engine.pullFromAdo({ query, ids });
+      result = await engine.pullFromAdo({ query, ids, pushFirst: true });
       break;
     case "push":
       result = await engine.pushToAdo({ ids });
       break;
     case "full":
       if (!query) {
-        fatal("Full sync requires --query=<wiql> to determine which items to pull.");
+        fatal("Full sync requires --query=<wiql> or --mine to determine which items to pull.");
       }
       result = await engine.fullSync(query);
       break;
@@ -56,4 +62,14 @@ async function createSyncEngine(): Promise<SyncEngine> {
     config.azure_devops.project,
   );
   return new SyncEngine(client, storage, stateManager);
+}
+
+function buildMyActiveItemsQuery(): string {
+  return [
+    "SELECT [System.Id] FROM WorkItems",
+    "WHERE [System.AssignedTo] = @me",
+    "  AND [System.State] <> 'Closed'",
+    "  AND [System.State] <> 'Removed'",
+    "ORDER BY [System.ChangedDate] DESC",
+  ].join(" ");
 }
