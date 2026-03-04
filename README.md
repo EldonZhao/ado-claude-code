@@ -1,11 +1,15 @@
 # ado-claude-code
 
+> **Azure DevOps meets AI — plan, track, and troubleshoot from your terminal.**
+
 Claude Code plugin for [Azure DevOps](https://dev.azure.com) integration. Sync work items to local YAML files, plan work item breakdowns with AI, manage troubleshooting guides (TSGs), and leverage AI-assisted diagnostics.
 
 ## Features
 
-- **Work Item Sync** — Bidirectional sync between Azure DevOps and local YAML files
+- **Work Item Sync** — Bidirectional sync between Azure DevOps and local YAML files, with automatic sync state tracking across all CLI commands
 - **AI-Assisted Planning** — Break down Epics into Features, Features into Stories, Stories into Tasks
+- **Code Planning** — Generate implementation plans from work items, with automatic state transition and comment posting
+- **Work Item Management** — Create, update, and query work items directly from the CLI
 - **TSG Management** — Create and manage structured troubleshooting guides
 - **AI Troubleshooting** — Diagnose issues by matching symptoms to TSGs, run diagnostics, suggest resolutions
 
@@ -89,14 +93,16 @@ node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --pr
 
 ## What's Included
 
-### Slash Commands (7)
+### Slash Commands (9)
 
 | Command | Description |
 |---------|-------------|
 | `/sync` | Pull/push/full sync work items with Azure DevOps |
-| `/code-plan` | Generate a code implementation plan from a work item |
+| `/code-plan` | Generate a code implementation plan from a work item (auto-updates state and adds comment) |
 | `/task-plan` | AI-assisted work item hierarchy breakdown |
 | `/query` | Run WIQL queries or list local items |
+| `/workitem-create` | Create a new work item in Azure DevOps |
+| `/clear` | Clear all synced work items from local storage |
 | `/troubleshoot` | Diagnose issues, analyze output, suggest resolutions |
 | `/tsg-create` | Create and manage troubleshooting guides |
 | `/setup` | Initialize, validate, login/logout, or show configuration |
@@ -142,20 +148,25 @@ node dist/cli.js setup show
 
 ### Work Items
 ```bash
-node dist/cli.js work-items get <id>
+node dist/cli.js work-items get <id> [--expand=all|relations|fields] [--no-save]
 node dist/cli.js work-items list [--type=...] [--state=...] [--assignedTo=...]
-node dist/cli.js work-items create --type=Task --title="Fix bug" [--priority=1]
-node dist/cli.js work-items update <id> [--state=Active] [--priority=2]
-node dist/cli.js work-items query "SELECT [System.Id] FROM WorkItems WHERE ..."
-node dist/cli.js work-items plan <id>
+node dist/cli.js work-items create --type=Task --title="Fix bug" [--priority=1] [--assignedTo=...] [--parentId=...]
+node dist/cli.js work-items update <id> [--state=Active] [--priority=2] [--comment="..."]
+node dist/cli.js work-items query "SELECT [System.Id] FROM WorkItems WHERE ..." [--save]
+node dist/cli.js work-items plan <id> [--no-update]
 node dist/cli.js work-items task-plan <id> [--items='[...]'] [--create]
 ```
 
 ### Sync
 ```bash
-node dist/cli.js sync pull [--ids=1,2,3] [--query="SELECT ..."]
+node dist/cli.js sync pull [--ids=1,2,3] [--query="SELECT ..."] [--mine] [--all]
 node dist/cli.js sync push [--ids=1,2,3]
-node dist/cli.js sync full --query="SELECT ..."
+node dist/cli.js sync full [--query="SELECT ..."] [--mine] [--all]
+```
+
+### Clear
+```bash
+node dist/cli.js clear [--confirm]
 ```
 
 ### TSG
@@ -200,16 +211,21 @@ src/
     ado/                ADO client, auth
     sync/               Sync engine, mapper, state
     tsg/                TSG search, executor
-    planning/           Work item breakdown
+    planning/           Work item breakdown, code plan
   storage/              Config, work-items, TSG, cache (YAML I/O)
   schemas/              Zod validation schemas
   utils/                Logger, error classes
 
 .claude-plugin/         Plugin manifest + marketplace catalog
-commands/               Slash commands (7)
+commands/               Slash commands (9)
 skills/                 Domain knowledge (4)
 agents/                 Specialist subagents (2)
 rules/                  Always-active conventions
+
+.claude/ado/
+  work-items/           Synced work items (YAML), organized by type
+  tsgs/                 Troubleshooting guides (YAML)
+  .ado-sync/            Sync state tracking
 ```
 
 ## License
