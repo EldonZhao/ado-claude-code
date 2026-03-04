@@ -97,15 +97,15 @@ node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --pr
 
 | Command | Description |
 |---------|-------------|
-| `/sync` | Pull/push/full sync work items with Azure DevOps |
-| `/code-plan` | Generate a code implementation plan from a work item (auto-updates state and adds comment) |
-| `/task-plan` | AI-assisted work item hierarchy breakdown |
-| `/query` | Run WIQL queries or list local items |
-| `/workitem-create` | Create a new work item in Azure DevOps |
-| `/clear` | Clear all synced work items from local storage |
-| `/troubleshoot` | Diagnose issues, analyze output, suggest resolutions |
-| `/tsg-create` | Create and manage troubleshooting guides |
-| `/setup` | Initialize, validate, login/logout, or show configuration |
+| `/ado-claude-code:sync` | Pull/push/full sync work items with Azure DevOps |
+| `/ado-claude-code:code-plan` | Generate a code implementation plan from a work item (auto-updates state and adds comment) |
+| `/ado-claude-code:task-plan` | AI-assisted work item hierarchy breakdown |
+| `/ado-claude-code:query` | Run WIQL queries or list local items |
+| `/ado-claude-code:workitem-create` | Create a new work item in Azure DevOps |
+| `/ado-claude-code:clear` | Clear all synced work items from local storage |
+| `/ado-claude-code:troubleshoot` | Diagnose issues, analyze output, suggest resolutions |
+| `/ado-claude-code:tsg-create` | Create and manage troubleshooting guides |
+| `/ado-claude-code:setup` | Initialize, validate, login/logout, or show configuration |
 
 ### Skills (4)
 
