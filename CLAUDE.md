@@ -55,7 +55,7 @@ node dist/cli.js <domain> <action> [--flags]
 
 ## Plugin Structure
 - `.claude-plugin/plugin.json` — Plugin manifest
-- `commands/*.md` — Slash commands (7)
+- `commands/*.md` — Slash commands (8)
 - `skills/*/SKILL.md` — Domain knowledge (4)
 - `agents/*.md` — Specialist subagents (2)
 - `rules/*.md` — Always-active conventions
