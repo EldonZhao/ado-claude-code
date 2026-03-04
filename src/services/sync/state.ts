@@ -81,7 +81,7 @@ export class SyncStateManager {
     delete state.workItems[String(id)];
   }
 
-  async setLastFullSync(timestamp: string): Promise<void> {
+  async setLastFullSync(timestamp: string | null): Promise<void> {
     const state = await this.load();
     state.lastFullSync = timestamp;
   }

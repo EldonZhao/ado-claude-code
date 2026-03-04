@@ -1,3 +1,4 @@
+import * as fs from "node:fs/promises";
 import type { AdoClient } from "../ado/client.js";
 import type { AdoWorkItem } from "../ado/types.js";
 import type { WorkItemStorage } from "../../storage/work-items.js";
@@ -23,6 +24,18 @@ export interface PullOptions {
 
 export interface PushOptions {
   ids?: number[];
+}
+
+export interface ClearResult {
+  status: "dry-run" | "cleared";
+  summary: {
+    total: number;
+    synced: number;
+    localModified: number;
+    remoteModified: number;
+    conflict: number;
+  };
+  cleared: number;
 }
 
 export class SyncEngine {
@@ -319,5 +332,41 @@ export class SyncEngine {
       await this.stateManager.save();
     }
     return modified;
+  }
+
+  /**
+   * Clear all synced work items and reset sync state.
+   * With confirm=false, returns a dry-run summary without deleting anything.
+   */
+  async clearAll(confirm: boolean): Promise<ClearResult> {
+    const allStates = await this.stateManager.getAllItemStates();
+    const summary = { total: 0, synced: 0, localModified: 0, remoteModified: 0, conflict: 0 };
+
+    for (const [, state] of allStates) {
+      summary.total++;
+      summary[state.syncStatus]++;
+    }
+
+    if (!confirm) {
+      return { status: "dry-run", summary, cleared: 0 };
+    }
+
+    let cleared = 0;
+    for (const [id, state] of allStates) {
+      try {
+        await fs.unlink(state.localPath);
+        cleared++;
+      } catch {
+        // File already missing — still count as cleared
+        cleared++;
+      }
+      await this.stateManager.removeItemState(id);
+    }
+
+    await this.stateManager.setLastFullSync(null);
+    await this.stateManager.save();
+
+    logger.info({ cleared, total: summary.total }, "Cleared synced items");
+    return { status: "cleared", summary, cleared };
   }
 }

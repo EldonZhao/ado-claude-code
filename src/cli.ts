@@ -5,12 +5,14 @@ import { handleSync } from "./cli/sync.js";
 import { handleTsg } from "./cli/tsg.js";
 import { handleSetup } from "./cli/setup.js";
 import { handleTroubleshoot } from "./cli/troubleshoot.js";
+import { handleClear } from "./cli/clear.js";
 
 const USAGE = `Usage: ado-claude-code <domain> <action> [args]
 
 Domains:
   work-items   get|list|create|update|query|plan
   sync         pull|push|full
+  clear        [--confirm]
   tsg          create|get|update|list|search|execute
   setup        init|validate|show
   troubleshoot diagnose|analyze|suggest
@@ -41,6 +43,9 @@ async function main(): Promise<void> {
         break;
       case "sync":
         await handleSync(rest);
+        break;
+      case "clear":
+        await handleClear(rest);
         break;
       case "tsg":
         await handleTsg(rest);
