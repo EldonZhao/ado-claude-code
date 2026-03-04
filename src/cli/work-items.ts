@@ -115,7 +115,7 @@ async function handleCreate(args: string[]): Promise<void> {
 async function handleUpdate(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
-  if (!idStr) fatal("Usage: work-items update <id> [--title=...] [--state=...] [--priority=N]");
+  if (!idStr) fatal("Usage: work-items update <id> [--title=...] [--state=...] [--priority=N] [--comment=...]");
 
   const id = parseInt(idStr, 10);
   if (isNaN(id)) fatal(`Invalid work item ID: ${idStr}`);
@@ -134,22 +134,47 @@ async function handleUpdate(args: string[]): Promise<void> {
   }
 
   const client = await getAdoClient();
-  const adoItem = await client.updateWorkItem({
-    id,
-    title: flags.title,
-    description: flags.description,
-    state: flags.state,
-    assignedTo: flags.assignedTo,
-    areaPath: flags.areaPath,
-    iterationPath: flags.iterationPath,
-    priority: flags.priority ? parseInt(flags.priority, 10) : undefined,
-    storyPoints: flags.storyPoints ? parseFloat(flags.storyPoints) : undefined,
-    customFields: flags.customFields ? JSON.parse(flags.customFields) : undefined,
-  });
-
-  const localItem = mapAdoToLocal(adoItem);
   const storage = await getWorkItemStorage();
-  await storage.save(localItem);
+
+  const hasFieldUpdates = flags.title || flags.description !== undefined ||
+    flags.state || flags.assignedTo !== undefined || flags.areaPath ||
+    flags.iterationPath || flags.priority || flags.storyPoints || flags.customFields;
+
+  let localItem;
+  if (hasFieldUpdates) {
+    const adoItem = await client.updateWorkItem({
+      id,
+      title: flags.title,
+      description: flags.description,
+      state: flags.state,
+      assignedTo: flags.assignedTo,
+      areaPath: flags.areaPath,
+      iterationPath: flags.iterationPath,
+      priority: flags.priority ? parseInt(flags.priority, 10) : undefined,
+      storyPoints: flags.storyPoints ? parseFloat(flags.storyPoints) : undefined,
+      customFields: flags.customFields ? JSON.parse(flags.customFields) : undefined,
+    });
+    localItem = mapAdoToLocal(adoItem);
+    await storage.save(localItem);
+  }
+
+  // Add comment if provided
+  if (flags.comment) {
+    const commentResult = await client.addComment(id, flags.comment);
+    if (!localItem) {
+      // Comment-only update: fetch current item for output
+      const adoItem = await client.getWorkItem(id, "relations");
+      localItem = mapAdoToLocal(adoItem);
+      await storage.save(localItem);
+    }
+    output({ ...localItem, commentAdded: { id: commentResult.id, text: commentResult.text } });
+    return;
+  }
+
+  if (!localItem) {
+    fatal("No fields to update and no comment provided.");
+  }
+
   output(localItem);
 }
 

@@ -281,6 +281,19 @@ export class AdoClient {
     return result;
   }
 
+  async addComment(workItemId: number, text: string): Promise<{ id: number; text: string }> {
+    const api = await this.getWitApi();
+    const result = await api.addComment(
+      { text } as any,
+      this.project,
+      workItemId,
+    );
+    if (!result || !result.id) {
+      throw new WorkItemError(`Failed to add comment to work item ${workItemId}`);
+    }
+    return { id: result.id, text: result.text ?? text };
+  }
+
   async queryWorkItems(wiql: string): Promise<AdoWorkItem[]> {
     const api = await this.getWitApi();
 
