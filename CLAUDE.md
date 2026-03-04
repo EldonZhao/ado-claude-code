@@ -26,7 +26,7 @@ node dist/cli.js <domain> <action> [--flags]
 
 ### Domains
 - `setup` — init, validate, show, login, logout
-- `work-items` — get, list, create, update, query, plan (code), task-plan (breakdown)
+- `work-items` — get, list, create, update, query, plan (code), workitem-plan (breakdown)
 - `sync` — pull, push, full
 - `clear` — [--confirm]
 - `tsg` — create, get, update, list, search, execute
@@ -35,7 +35,7 @@ node dist/cli.js <domain> <action> [--flags]
 ## Architecture
 - `src/cli.ts` — CLI entry point (arg parsing + routing)
 - `src/cli/` — CLI handler modules
-  - `work-items.ts` — Work item CRUD, query, plan (code), task-plan (breakdown)
+  - `work-items.ts` — Work item CRUD, query, plan (code), workitem-plan (breakdown)
   - `sync.ts` — Bidirectional sync
   - `clear.ts` — Clear synced work items
   - `tsg.ts` — TSG CRUD, search, execute

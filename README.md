@@ -99,7 +99,7 @@ node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --pr
 |---------|-------------|
 | `/ado-claude-code:sync` | Pull/push/full sync work items with Azure DevOps |
 | `/ado-claude-code:code-plan` | Generate a code implementation plan from a work item (auto-updates state and adds comment) |
-| `/ado-claude-code:task-plan` | AI-assisted work item hierarchy breakdown |
+| `/ado-claude-code:workitem-plan` | AI-assisted work item hierarchy breakdown |
 | `/ado-claude-code:query` | Run WIQL queries or list local items |
 | `/ado-claude-code:workitem-create` | Create a new work item in Azure DevOps |
 | `/ado-claude-code:clear` | Clear all synced work items from local storage |
@@ -154,7 +154,7 @@ node dist/cli.js work-items create --type=Task --title="Fix bug" [--priority=1] 
 node dist/cli.js work-items update <id> [--state=Active] [--priority=2] [--comment="..."]
 node dist/cli.js work-items query "SELECT [System.Id] FROM WorkItems WHERE ..." [--save]
 node dist/cli.js work-items plan <id> [--no-update]
-node dist/cli.js work-items task-plan <id> [--items='[...]'] [--create]
+node dist/cli.js work-items workitem-plan <id> [--items='[...]'] [--create]
 ```
 
 ### Sync

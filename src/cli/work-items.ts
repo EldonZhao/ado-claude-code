@@ -42,7 +42,7 @@ async function saveAndTrack(
 export async function handleWorkItems(args: string[]): Promise<void> {
   const action = args[0];
   if (!action) {
-    fatal("Usage: work-items <get|list|create|update|query|plan|task-plan> [args]");
+    fatal("Usage: work-items <get|list|create|update|query|plan|workitem-plan> [args]");
   }
 
   switch (action) {
@@ -58,10 +58,11 @@ export async function handleWorkItems(args: string[]): Promise<void> {
       return handleQuery(args.slice(1));
     case "plan":
       return handlePlan(args.slice(1));
+    case "workitem-plan":
     case "task-plan":
-      return handleTaskPlan(args.slice(1));
+      return handleWorkitemPlan(args.slice(1));
     default:
-      fatal(`Unknown work-items action: ${action}. Use get|list|create|update|query|plan|task-plan`);
+      fatal(`Unknown work-items action: ${action}. Use get|list|create|update|query|plan|workitem-plan`);
   }
 }
 
@@ -295,10 +296,10 @@ async function handlePlan(args: string[]): Promise<void> {
   output(result);
 }
 
-async function handleTaskPlan(args: string[]): Promise<void> {
+async function handleWorkitemPlan(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
-  if (!idStr) fatal("Usage: work-items task-plan <id> [--items=<json>] [--create]");
+  if (!idStr) fatal("Usage: work-items workitem-plan <id> [--items=<json>] [--create]");
 
   const id = parseInt(idStr, 10);
   if (isNaN(id)) fatal(`Invalid work item ID: ${idStr}`);

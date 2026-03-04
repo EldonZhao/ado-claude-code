@@ -47,4 +47,4 @@ node dist/cli.js work-items plan 415156
 
 ## See Also
 
-Use `/task-plan` to break down a work item into child items following the ADO hierarchy (Epic → Feature → User Story → Task).
+Use `/workitem-plan` to break down a work item into child items following the ADO hierarchy (Epic → Feature → User Story → Task → Task).

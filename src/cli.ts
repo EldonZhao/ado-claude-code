@@ -10,7 +10,7 @@ import { handleClear } from "./cli/clear.js";
 const USAGE = `Usage: ado-claude-code <domain> <action> [args]
 
 Domains:
-  work-items   get|list|create|update|query|plan|task-plan
+  work-items   get|list|create|update|query|plan|workitem-plan
   sync         pull|push|full
   clear        [--confirm]
   tsg          create|get|update|list|search|execute

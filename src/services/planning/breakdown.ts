@@ -117,8 +117,8 @@ export function getBreakdownGuidance(
       "Write user stories in 'As a [role], I want [goal], so that [benefit]' format. " +
       "Each story should be independent, negotiable, valuable, estimable, small, and testable (INVEST).",
     Task:
-      "Break into concrete, actionable tasks. Each task should be completable by one person. " +
-      "Include implementation details and definition of done.",
+      "Break into smaller, atomic sub-tasks. Each sub-task should represent a single concrete action. " +
+      "Include specific implementation details and clear completion criteria.",
   };
 
   return (
@@ -128,7 +128,7 @@ export function getBreakdownGuidance(
       ? `Description:\n${parent.description}\n\n`
       : "\n") +
     `Guidelines for ${childType}:\n${guidelines[childType] ?? "Create appropriate child items."}\n\n` +
-    `Return your proposal by calling ado_work_items_task_plan with:\n` +
+    `Return your proposal by calling ado_work_items_workitem_plan with:\n` +
     `- id: ${parent.id}\n` +
     `- items: array of {title, description, priority?, storyPoints?}\n` +
     `- createInAdo: true (to create) or false (preview only)`

@@ -13,6 +13,7 @@ description: Work item breakdown hierarchy, estimation guidance, and planning be
 | Feature | User Story | Follow INVEST: Independent, Negotiable, Valuable, Estimable, Small, Testable. Use "As a [role], I want [goal], so that [benefit]" format. |
 | User Story | Task | Concrete, actionable. Completable by one person. Include implementation details and definition of done. |
 | Bug | Task | Steps to investigate, reproduce, fix, and verify. |
+| Task | Task (Sub-Task) | Smaller atomic actions. Each represents a single step with clear completion criteria. |
 
 ## Planning Process
 
@@ -20,7 +21,7 @@ description: Work item breakdown hierarchy, estimation guidance, and planning be
 Get the full context of the item to break down — title, description, acceptance criteria.
 
 ### Step 2: Get guidance
-Call the task-plan command without items to receive hierarchy-specific guidance and the parent's details.
+Call the workitem-plan command without items to receive hierarchy-specific guidance and the parent's details.
 
 ### Step 3: Generate proposal
 Create child items based on the guidance. Each item needs:
@@ -31,7 +32,7 @@ Create child items based on the guidance. Each item needs:
 - **storyPoints** — Effort estimate (optional)
 
 ### Step 4: Preview
-Call the task-plan command with items but without --create to validate and preview.
+Call the workitem-plan command with items but without --create to validate and preview.
 
 ### Step 5: Create in ADO
 Call with --create to create the items in Azure DevOps with parent links.

@@ -1,5 +1,5 @@
 ---
-name: ado-claude-code:task-plan
+name: ado-claude-code:workitem-plan
 description: Break down an Azure DevOps work item into child items using AI-assisted planning
 arguments:
   - name: id
@@ -15,14 +15,14 @@ arguments:
 
 # ADO Work Item Breakdown
 
-AI-assisted breakdown of work items following the ADO hierarchy: Epic -> Feature -> User Story -> Task.
+AI-assisted breakdown of work items following the ADO hierarchy: Epic -> Feature -> User Story -> Task -> Task (sub-tasks).
 
 ## Usage
 
 ### Step 1: Get guidance for breaking down a work item
 
 ```bash
-node dist/cli.js work-items task-plan 1234
+node dist/cli.js work-items workitem-plan 1234
 ```
 
 This fetches the parent work item and returns guidance on how to break it down.
@@ -30,13 +30,13 @@ This fetches the parent work item and returns guidance on how to break it down.
 ### Step 2: Preview a breakdown proposal
 
 ```bash
-node dist/cli.js work-items task-plan 1234 --items='[{"type":"User Story","title":"As a user, I want...","description":"...","priority":2}]'
+node dist/cli.js work-items workitem-plan 1234 --items='[{"type":"User Story","title":"As a user, I want...","description":"...","priority":2}]'
 ```
 
 ### Step 3: Create the items in ADO
 
 ```bash
-node dist/cli.js work-items task-plan 1234 --items='[...]' --create
+node dist/cli.js work-items workitem-plan 1234 --items='[...]' --create
 ```
 
 ## Hierarchy
@@ -44,6 +44,7 @@ node dist/cli.js work-items task-plan 1234 --items='[...]' --create
 - **Epic** breaks down into **Features**
 - **Feature** breaks down into **User Stories**
 - **User Story** breaks down into **Tasks**
+- **Task** breaks down into **Tasks** (sub-tasks)
 - **Bug** breaks down into **Tasks**
 
 ## Workflow

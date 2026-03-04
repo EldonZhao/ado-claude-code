@@ -35,8 +35,8 @@ describe("HIERARCHY", () => {
     expect(HIERARCHY["User Story"]).toEqual(["Task"]);
   });
 
-  it("Task cannot be broken down", () => {
-    expect(HIERARCHY["Task"]).toEqual([]);
+  it("Task breaks down to Task (sub-tasks)", () => {
+    expect(HIERARCHY["Task"]).toEqual(["Task"]);
   });
 
   it("Bug breaks down to Task", () => {
@@ -72,8 +72,8 @@ describe("getDepthLabel", () => {
     );
   });
 
-  it("stops at leaf type", () => {
-    expect(getDepthLabel("Task", 5)).toBe("Task");
+  it("chains for Task→Task", () => {
+    expect(getDepthLabel("Task", 5)).toBe("Task → Task → Task → Task → Task → Task");
   });
 
   it("works for Bug", () => {
@@ -107,13 +107,17 @@ describe("createBreakdownProposal", () => {
     expect(proposal.items[0].type).toBe("Feature");
   });
 
-  it("throws for leaf types", () => {
+  it("creates proposal for Task→Task", () => {
     const parent = makeParent({ type: "Task" });
-    expect(() =>
-      createBreakdownProposal(parent, [
-        { type: "Task" as const, title: "Sub task" },
-      ]),
-    ).toThrow("cannot be broken down further");
+    const items = [
+      { type: "Task" as const, title: "Sub task 1" },
+    ];
+
+    const proposal = createBreakdownProposal(parent, items);
+    expect(proposal.parent.id).toBe(100);
+    expect(proposal.childType).toBe("Task");
+    expect(proposal.items).toHaveLength(1);
+    expect(proposal.hierarchyPath).toBe("Task → Task");
   });
 });
 
@@ -165,7 +169,7 @@ describe("getBreakdownGuidance", () => {
     const guidance = getBreakdownGuidance(parent);
     expect(guidance).toContain("Break down this Epic into Feature(s)");
     expect(guidance).toContain("#100");
-    expect(guidance).toContain("ado_work_items_task_plan");
+    expect(guidance).toContain("ado_work_items_workitem_plan");
   });
 
   it("includes description when available", () => {
@@ -174,9 +178,9 @@ describe("getBreakdownGuidance", () => {
     expect(guidance).toContain("My epic description");
   });
 
-  it("returns cannot-break-down message for Task", () => {
+  it("returns guidance for Task breakdown", () => {
     const parent = makeParent({ type: "Task" });
     const guidance = getBreakdownGuidance(parent);
-    expect(guidance).toContain("cannot be broken down further");
+    expect(guidance).toContain("Break down this Task into Task(s)");
   });
 });

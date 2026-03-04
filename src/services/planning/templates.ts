@@ -13,7 +13,7 @@ export const HIERARCHY: Record<WorkItemType, WorkItemType[]> = {
   Epic: ["Feature"],
   Feature: ["User Story"],
   "User Story": ["Task"],
-  Task: [],
+  Task: ["Task"],
   Bug: ["Task"],
 };
 
