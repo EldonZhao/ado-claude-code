@@ -113,7 +113,7 @@ A Claude Code MCP server plugin that integrates with Azure DevOps to:
 **Step 10** — TSG storage and schema
 - `src/schemas/tsg.schema.ts` — TSG Zod schema (metadata, symptoms, diagnostics, resolutions)
 - `src/storage/tsg.ts` — TSG file CRUD
-- Create `data/tsg/_index.yaml` and `data/tsg/categories/` structure
+- Create `data/tsgs/_index.yaml` and `data/tsgs/categories/` structure
 - Create `templates/tsg/template.yaml` with full TSG structure
 - **Deliverable:** TSG files can be created and read
 
@@ -287,7 +287,7 @@ description: |
   Markdown description here...
 ```
 
-### TSG (YAML): `data/tsg/{category}/{slug}.yaml`
+### TSG (YAML): `data/tsgs/{category}/{slug}.yaml`
 ```yaml
 id: "tsg-deployment-001"
 title: "Kubernetes Pod CrashLoopBackOff"

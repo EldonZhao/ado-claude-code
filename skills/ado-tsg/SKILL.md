@@ -53,7 +53,7 @@ Resolution plans keyed by root cause:
 
 ## Local Storage
 
-TSGs are stored as YAML files in `data/tsg/` named by their ID (e.g., `tsg-deployment-001.yaml`).
+TSGs are stored as YAML files in `data/tsgs/` named by their ID (e.g., `tsg-deployment-001.yaml`).
 
 ## Search & Matching
 
