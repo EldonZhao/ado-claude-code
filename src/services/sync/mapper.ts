@@ -4,6 +4,15 @@ import type { WorkItemType } from "../../types/index.js";
 import { stringify as stringifyYaml } from "yaml";
 
 /**
+ * Convert an ADO REST API URL to a web-browsable URL.
+ * e.g. https://org.visualstudio.com/{project}/_apis/wit/workItems/123
+ *    → https://org.visualstudio.com/{project}/_workitems/edit/123
+ */
+export function toWebUrl(apiUrl: string): string {
+  return apiUrl.replace(/_apis\/wit\/workItems\/(\d+)$/, "_workitems/edit/$1");
+}
+
+/**
  * Map an ADO API work item to the local YAML-compatible format.
  */
 export function adoToLocal(item: AdoWorkItem): LocalWorkItemOutput {
@@ -24,7 +33,7 @@ export function adoToLocal(item: AdoWorkItem): LocalWorkItemOutput {
   return {
     id: item.id,
     rev: item.rev,
-    url: item.url,
+    url: toWebUrl(item.url),
     syncedAt: new Date().toISOString(),
     type: (f["System.WorkItemType"] as WorkItemType) ?? "Task",
     title: f["System.Title"] as string,

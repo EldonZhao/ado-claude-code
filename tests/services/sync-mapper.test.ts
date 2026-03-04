@@ -3,6 +3,7 @@ import {
   adoToLocal,
   localToAdoPatch,
   serializeForHash,
+  toWebUrl,
 } from "../../src/services/sync/mapper.js";
 import type { AdoWorkItem } from "../../src/services/ado/types.js";
 import type { LocalWorkItemOutput } from "../../src/schemas/work-item.schema.js";
@@ -11,7 +12,7 @@ function makeAdoItem(overrides?: Partial<AdoWorkItem>): AdoWorkItem {
   return {
     id: 12345,
     rev: 3,
-    url: "https://dev.azure.com/org/project/_workitems/edit/12345",
+    url: "https://dev.azure.com/org/project/_apis/wit/workItems/12345",
     fields: {
       "System.WorkItemType": "User Story",
       "System.Title": "Test Story",
@@ -50,6 +51,29 @@ function makeLocalItem(
   };
 }
 
+describe("toWebUrl", () => {
+  it("converts dev.azure.com API URL to web URL", () => {
+    expect(
+      toWebUrl("https://dev.azure.com/org/project/_apis/wit/workItems/12345"),
+    ).toBe("https://dev.azure.com/org/project/_workitems/edit/12345");
+  });
+
+  it("converts visualstudio.com API URL to web URL", () => {
+    expect(
+      toWebUrl("https://outlookweb.visualstudio.com/96d8c580-9d17-4232-9a8f-30d9ed915689/_apis/wit/workItems/415168"),
+    ).toBe("https://outlookweb.visualstudio.com/96d8c580-9d17-4232-9a8f-30d9ed915689/_workitems/edit/415168");
+  });
+
+  it("passes through already-correct web URLs", () => {
+    const webUrl = "https://dev.azure.com/org/project/_workitems/edit/12345";
+    expect(toWebUrl(webUrl)).toBe(webUrl);
+  });
+
+  it("passes through empty string", () => {
+    expect(toWebUrl("")).toBe("");
+  });
+});
+
 describe("adoToLocal", () => {
   it("maps all fields correctly", () => {
     const ado = makeAdoItem();
@@ -57,6 +81,7 @@ describe("adoToLocal", () => {
 
     expect(local.id).toBe(12345);
     expect(local.rev).toBe(3);
+    expect(local.url).toBe("https://dev.azure.com/org/project/_workitems/edit/12345");
     expect(local.type).toBe("User Story");
     expect(local.title).toBe("Test Story");
     expect(local.state).toBe("Active");
