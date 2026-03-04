@@ -20,7 +20,9 @@ export async function handleSync(args: string[]): Promise<void> {
     fatal("Cannot use --mine and --query together. Use one or the other.");
   }
 
-  const query = mine ? buildMyActiveItemsQuery() : flags.query;
+  const needsQuery = action === "pull" || action === "full";
+  const useMyItems = mine || (needsQuery && !flags.query && !ids);
+  const query = useMyItems ? buildMyActiveItemsQuery() : flags.query;
 
   const engine = await createSyncEngine();
 
@@ -34,10 +36,7 @@ export async function handleSync(args: string[]): Promise<void> {
       result = await engine.pushToAdo({ ids });
       break;
     case "full":
-      if (!query) {
-        fatal("Full sync requires --query=<wiql> or --mine to determine which items to pull.");
-      }
-      result = await engine.fullSync(query);
+      result = await engine.fullSync(query!);
       break;
     default:
       fatal(`Unknown sync action: ${action}`);
@@ -70,6 +69,7 @@ function buildMyActiveItemsQuery(): string {
     "WHERE [System.AssignedTo] = @me",
     "  AND [System.State] <> 'Closed'",
     "  AND [System.State] <> 'Removed'",
+    "  AND [System.State] <> 'Completed'",
     "ORDER BY [System.ChangedDate] DESC",
   ].join(" ");
 }

@@ -32,15 +32,15 @@ node dist/cli.js sync full [--query="SELECT ..."] [--mine]
 
 ## Directions
 
-- **pull** — Download work items from Azure DevOps to local YAML files. Requires `--ids`, `--query`, or `--mine`. Automatically pushes locally modified items first to prevent overwriting local edits.
+- **pull** — Download work items from Azure DevOps to local YAML files. Defaults to pulling active items assigned to the current user when no flags are provided. Can be narrowed with `--ids`, `--query`, or `--mine`. Automatically pushes locally modified items first to prevent overwriting local edits.
 - **push** — Upload locally modified work items to Azure DevOps. Optionally filter with `--ids`.
-- **full** — Bidirectional sync: push local changes then pull. Requires `--query` or `--mine`.
+- **full** — Bidirectional sync: push local changes then pull. Defaults to the current user's active items when no flags are provided. Can be narrowed with `--query` or `--mine`.
 
 ## Flags
 
 - `--ids=1234,5678` — Comma-separated work item IDs to sync.
 - `--query="SELECT ..."` — WIQL query to select items for pull/full.
-- `--mine` — Shorthand for pulling all active (non-Closed, non-Removed) items assigned to the current user. Cannot be combined with `--query`.
+- `--mine` — Shorthand for pulling all active (non-Closed, non-Removed, non-Completed) items assigned to the current user. Cannot be combined with `--query`. This is the default behavior for `pull` and `full` when no flags are provided.
 
 ## Examples
 
