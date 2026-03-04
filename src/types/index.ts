@@ -4,7 +4,8 @@ export type WorkItemType =
   | "Feature"
   | "User Story"
   | "Task"
-  | "Bug";
+  | "Bug"
+  | string;
 
 export interface LocalWorkItem {
   id: number;

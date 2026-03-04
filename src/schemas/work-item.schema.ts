@@ -1,12 +1,6 @@
 import { z } from "zod/v4";
 
-export const WorkItemTypeSchema = z.enum([
-  "Epic",
-  "Feature",
-  "User Story",
-  "Task",
-  "Bug",
-]);
+export const WorkItemTypeSchema = z.string().min(1);
 
 export const WorkItemCommentSchema = z.object({
   author: z.string(),

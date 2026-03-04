@@ -9,7 +9,7 @@ import type { WorkItemType } from "../types/index.js";
 import { WorkItemError } from "../utils/errors.js";
 import { logger } from "../utils/logger.js";
 
-const TYPE_TO_DIR: Record<WorkItemType, string> = {
+const TYPE_TO_DIR: Record<string, string> = {
   Epic: "epics",
   Feature: "features",
   "User Story": "user-stories",
@@ -17,11 +17,15 @@ const TYPE_TO_DIR: Record<WorkItemType, string> = {
   Bug: "bugs",
 };
 
+function typeToDirName(type: string): string {
+  return TYPE_TO_DIR[type] ?? type.toLowerCase().replace(/\s+/g, "-") + "s";
+}
+
 export class WorkItemStorage {
   constructor(private basePath: string) {}
 
   private getDir(type: WorkItemType): string {
-    return path.join(this.basePath, TYPE_TO_DIR[type]);
+    return path.join(this.basePath, typeToDirName(type));
   }
 
   private getFilePath(type: WorkItemType, id: number): string {
