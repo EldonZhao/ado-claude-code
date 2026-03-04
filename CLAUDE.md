@@ -75,5 +75,5 @@ node dist/cli.js <domain> <action> [--flags]
 Tests live in `tests/` and use vitest. Run with `npm test`.
 - `tests/utils/` — Error class tests
 - `tests/services/` — TSG executor, TSG search, sync mapper, sync engine, planning tests
-- `tests/cli/` — CLI handler tests (clear, sync, work-items plan)
+- `tests/cli/` — CLI handler tests (clear, sync, work-items plan, work-items workitem-plan)
 - `tests/storage/` — Cache tests
