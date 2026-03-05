@@ -19,6 +19,7 @@ import type {
 export class AdoClient {
   private connection: azdev.WebApi | null = null;
   private witApi: IWorkItemTrackingApi | null = null;
+  private terminalStateCache = new Map<string, string>();
 
   constructor(private config: AdoConfigOutput) {}
 
@@ -293,6 +294,42 @@ export class AdoClient {
       throw new WorkItemError(`Failed to add comment to work item ${workItemId}`);
     }
     return { id: result.id, text: result.text ?? text };
+  }
+
+  async getTerminalState(workItemType: string): Promise<string> {
+    const cached = this.terminalStateCache.get(workItemType);
+    if (cached) return cached;
+
+    const api = await this.getWitApi();
+    const witType = await api.getWorkItemType(this.project, workItemType);
+
+    // Look for a terminal state from the transitions map
+    // The transitions object maps state names → arrays of WorkItemStateTransition (with .to property)
+    const preferred = ["Done", "Closed", "Completed", "Resolved", "Removed"];
+    const allStates = new Set<string>();
+
+    if (witType?.transitions) {
+      for (const targets of Object.values(witType.transitions)) {
+        if (Array.isArray(targets)) {
+          for (const t of targets) {
+            const name = typeof t === "string" ? t : t?.to;
+            if (name) allStates.add(name);
+          }
+        }
+      }
+    }
+
+    // Pick the first preferred state that exists in the transitions
+    for (const pref of preferred) {
+      if (allStates.has(pref)) {
+        this.terminalStateCache.set(workItemType, pref);
+        return pref;
+      }
+    }
+
+    throw new WorkItemError(
+      `No terminal state found for work item type "${workItemType}". Available states: ${[...allStates].join(", ")}`,
+    );
   }
 
   async queryWorkItems(wiql: string): Promise<AdoWorkItem[]> {

@@ -11,6 +11,9 @@ arguments:
   - name: create
     description: "Whether to create items in ADO (true/false, default: false)"
     required: false
+  - name: no-update
+    description: "Skip automatic state transition and comment (default: false)"
+    required: false
 ---
 
 # ADO Work Item Breakdown
@@ -46,6 +49,21 @@ node dist/cli.js work-items workitem-plan 1234 --items='[...]' --create
 - **User Story** breaks down into **Tasks**
 - **Task** breaks down into **Tasks** (sub-tasks)
 - **Bug** breaks down into **Tasks**
+
+## Flags
+
+- `--no-update` — Skip automatic state transition and comment. Only generates the breakdown guidance.
+
+## Side Effects
+
+When invoked without `--no-update`, this command will:
+
+1. **Set state to "In Progress"** — If the work item is in "New", "To Do", "Proposed", or "Approved" state.
+2. **Add a comment** — Posts breakdown plan details to the work item.
+
+When creating child items (with `--create`), a summary comment listing created items is also posted.
+
+Both updates are non-blocking: if either fails, the breakdown guidance is still returned.
 
 ## Workflow
 
