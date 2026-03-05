@@ -24,6 +24,10 @@ export const SyncConfigSchema = z.object({
   conflictResolution: z.enum(["local-wins", "remote-wins", "ask"]).default("ask"),
 });
 
+export const WorkItemTypeDefaultsSchema = z.object({
+  customFields: z.record(z.string(), z.unknown()).optional(),
+});
+
 export const AdoConfigSchema = z.object({
   version: z.string().default("1.0"),
   azure_devops: AzureDevOpsConfigSchema,
@@ -37,6 +41,7 @@ export const AdoConfigSchema = z.object({
     pullOnStartup: true,
     conflictResolution: "ask",
   }),
+  defaults: z.record(z.string(), WorkItemTypeDefaultsSchema).optional(),
 });
 
 export type AdoConfigInput = z.input<typeof AdoConfigSchema>;

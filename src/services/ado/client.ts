@@ -153,10 +153,11 @@ export class AdoClient {
         },
       });
     }
-    if (params.customFields) {
-      for (const [key, value] of Object.entries(params.customFields)) {
-        operations.push({ op: "add", path: `/fields/${key}`, value });
-      }
+    // Merge type-specific defaults from config with explicit customFields (explicit wins)
+    const typeDefaults = this.config.defaults?.[params.type]?.customFields ?? {};
+    const mergedCustomFields = { ...typeDefaults, ...params.customFields };
+    for (const [key, value] of Object.entries(mergedCustomFields)) {
+      operations.push({ op: "add", path: `/fields/${key}`, value });
     }
 
     const item = await api.createWorkItem(

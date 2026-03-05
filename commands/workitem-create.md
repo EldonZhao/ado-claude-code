@@ -61,6 +61,11 @@ Create a Bug with description:
 node dist/cli.js work-items create --type=Bug --title="Login fails on empty password" --description="Submit with blank password returns 500" --priority=1
 ```
 
+Create a Bug with a custom Product Impact value (overrides config default):
+```bash
+node dist/cli.js work-items create --type=Bug --title="Critical crash" --priority=1 --customFields='{"Custom.ProductImpact":"1 - Critical"}'
+```
+
 Create a User Story assigned to someone:
 ```bash
 node dist/cli.js work-items create --type="User Story" --title="As a user, I want to reset my password" --assignedTo="user@example.com"
@@ -77,3 +82,16 @@ node dist/cli.js work-items create --json='{"type":"Feature","title":"Dark mode"
 ```
 
 The created work item is saved locally to `.claude/ado/work-items/` as a YAML file.
+
+## Type Defaults
+
+You can configure default custom fields per work item type in `.claude/.ado-config.yaml` under the `defaults` key. These are automatically applied when creating work items of that type. Explicit `--customFields` values override defaults.
+
+```yaml
+defaults:
+  Bug:
+    customFields:
+      Custom.ProductImpact: "3 - Medium"
+```
+
+This ensures Bug creation succeeds in ADO projects that require the `Custom.ProductImpact` field.
