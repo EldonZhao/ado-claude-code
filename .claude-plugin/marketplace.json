@@ -10,7 +10,7 @@
       "name": "ado-claude-code",
       "source": "./",
       "description": "Azure DevOps integration for Claude Code — work item sync, AI planning, TSG management, and troubleshooting",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "EldonZhao"
       },
