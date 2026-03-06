@@ -29,10 +29,12 @@ arguments:
 
 Create a new work item in Azure DevOps and automatically save it to local YAML storage.
 
+**IMPORTANT:** Always pass `--project-dir=<user's project root>` so the item is saved in the project's `.claude/` directory, not the plugin's.
+
 ## Usage
 
 ```bash
-node dist/cli.js work-items create --type=<type> --title=<title> [flags]
+node dist/cli.js work-items create --project-dir=/path/to/project --type=<type> --title=<title> [flags]
 ```
 
 ## Flags

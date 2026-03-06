@@ -6,8 +6,12 @@ import { handleTsg } from "./cli/tsg.js";
 import { handleSetup } from "./cli/setup.js";
 import { handleTroubleshoot } from "./cli/troubleshoot.js";
 import { handleClear } from "./cli/clear.js";
+import { setProjectDir } from "./storage/config.js";
 
 const USAGE = `Usage: ado-claude-code <domain> <action> [args]
+
+Global flags:
+  --project-dir=<path>   Project root directory (where .claude/ lives)
 
 Domains:
   work-items   get|list|create|update|query|plan|workitem-plan
@@ -25,7 +29,17 @@ Examples:
 `;
 
 async function main(): Promise<void> {
-  const args = process.argv.slice(2);
+  const rawArgs = process.argv.slice(2);
+
+  // Extract --project-dir before routing
+  const args: string[] = [];
+  for (const arg of rawArgs) {
+    if (arg.startsWith("--project-dir=")) {
+      setProjectDir(arg.slice("--project-dir=".length));
+    } else {
+      args.push(arg);
+    }
+  }
 
   if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     process.stdout.write(USAGE);

@@ -10,8 +10,10 @@ description: Always-active Azure DevOps conventions and workflow reminders
 All Azure DevOps operations go through the CLI at `dist/cli.js`. Output is JSON to stdout, logs go to stderr.
 
 ```bash
-node dist/cli.js <domain> <action> [--flags] [args]
+node dist/cli.js <domain> <action> --project-dir=<user's project root> [--flags] [args]
 ```
+
+**CRITICAL:** Always pass `--project-dir=<path>` pointing to the user's current project working directory. Without it, data will be stored in the wrong location when the plugin is installed via marketplace. Use the user's project root (where `.claude/` lives or should live).
 
 Domains: `work-items`, `sync`, `tsg` (includes `ts` subcommand for troubleshooting), `setup`
 

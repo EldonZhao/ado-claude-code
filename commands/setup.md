@@ -17,6 +17,8 @@ arguments:
 
 You are an interactive setup assistant for the Azure DevOps integration.
 
+**IMPORTANT:** Always pass `--project-dir=<user's project root>` so config is stored in the project's `.claude/` directory, not the plugin's.
+
 ## Behavior
 
 When the user invokes this command **without arguments** (or with action `init`), guide them through a complete setup flow:
@@ -30,7 +32,7 @@ When the user invokes this command **without arguments** (or with action `init`)
 
 3. **Initialize configuration** — Run:
    ```bash
-   node dist/cli.js setup init --organization="<org_url>" --project="<project_name>"
+   node dist/cli.js setup init --project-dir="<project_root>" --organization="<org_url>" --project="<project_name>"
    ```
 
 4. **Authenticate** — Run the login command to complete browser-based Azure AD authentication:

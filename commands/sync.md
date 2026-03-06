@@ -23,14 +23,16 @@ arguments:
 
 Synchronize work items between Azure DevOps and local YAML storage.
 
+**IMPORTANT:** Always pass `--project-dir=<user's project root>` so data is stored in the project's `.claude/` directory, not the plugin's.
+
 ## Usage
 
 Run the sync CLI to pull, push, or perform a full bidirectional sync.
 
 ```bash
-node dist/cli.js sync pull [--ids=1234,5678] [--query="SELECT ..."] [--mine] [--all]
-node dist/cli.js sync push [--ids=1234,5678]
-node dist/cli.js sync full [--query="SELECT ..."] [--mine] [--all]
+node dist/cli.js sync pull --project-dir=/path/to/project [--ids=1234,5678] [--query="SELECT ..."] [--mine] [--all]
+node dist/cli.js sync push --project-dir=/path/to/project [--ids=1234,5678]
+node dist/cli.js sync full --project-dir=/path/to/project [--query="SELECT ..."] [--mine] [--all]
 ```
 
 ## Directions

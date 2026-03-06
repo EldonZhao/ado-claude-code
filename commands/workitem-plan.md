@@ -23,12 +23,14 @@ arguments:
 
 AI-assisted breakdown of work items following the ADO hierarchy: Epic -> Feature -> User Story -> Task -> Task (sub-tasks).
 
+**IMPORTANT:** Always pass `--project-dir=<user's project root>` so data is stored in the project's `.claude/` directory, not the plugin's.
+
 ## Usage
 
 ### Step 1: Get guidance for breaking down a work item
 
 ```bash
-node dist/cli.js work-items workitem-plan 1234
+node dist/cli.js work-items workitem-plan --project-dir=/path/to/project 1234
 ```
 
 This fetches the parent work item and returns guidance on how to break it down.

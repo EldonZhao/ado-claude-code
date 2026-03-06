@@ -17,10 +17,12 @@ arguments:
 
 Create and manage structured Troubleshooting Guides.
 
+**IMPORTANT:** Always pass `--project-dir=<user's project root>` so TSGs are stored in the project's `.claude/` directory, not the plugin's.
+
 ## Create a TSG
 
 ```bash
-node dist/cli.js tsg create --title="Pod OOM" --category=deployment --tags='["oom","kubernetes"]' --symptoms='["pod keeps restarting","OOMKilled in events"]'
+node dist/cli.js tsg create --project-dir=/path/to/project --title="Pod OOM" --category=deployment --tags='["oom","kubernetes"]' --symptoms='["pod keeps restarting","OOMKilled in events"]'
 ```
 
 ### Create from template

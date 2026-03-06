@@ -23,10 +23,12 @@ arguments:
 
 Query work items from Azure DevOps or list locally synced items.
 
+**IMPORTANT:** Always pass `--project-dir=<user's project root>` so data is read from the project's `.claude/` directory, not the plugin's.
+
 ## Query from ADO (WIQL)
 
 ```bash
-node dist/cli.js work-items query "SELECT [System.Id], [System.Title] FROM WorkItems WHERE [System.State] = 'Active'"
+node dist/cli.js work-items query --project-dir=/path/to/project "SELECT [System.Id], [System.Title] FROM WorkItems WHERE [System.State] = 'Active'"
 ```
 
 Save query results locally:

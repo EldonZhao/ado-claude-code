@@ -11,10 +11,12 @@ arguments:
 
 Generate a code implementation plan from any Azure DevOps work item. Works for all work item types: Epic, Feature, User Story, Task, and Bug.
 
+**IMPORTANT:** Always pass `--project-dir=<user's project root>` so the correct project's `.claude/` config is used, not the plugin's.
+
 ## Usage
 
 ```bash
-node dist/cli.js work-items plan <id> [--no-update]
+node dist/cli.js work-items plan --project-dir=/path/to/project <id> [--no-update]
 ```
 
 ## Flags

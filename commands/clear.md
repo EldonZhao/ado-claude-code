@@ -11,10 +11,12 @@ arguments:
 
 Remove all locally synced work items and reset sync state.
 
+**IMPORTANT:** Always pass `--project-dir=<user's project root>` so the correct project's `.claude/` directory is cleared, not the plugin's.
+
 ## Usage
 
 ```bash
-node dist/cli.js clear [--confirm]
+node dist/cli.js clear --project-dir=/path/to/project [--confirm]
 ```
 
 ## Behavior

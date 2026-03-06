@@ -10,10 +10,16 @@ const CONFIG_FILENAME = ".ado-config.yaml";
 
 let cachedConfig: AdoConfigOutput | null = null;
 let configPath: string | null = null;
+let projectDir: string | null = null;
+
+/** Set the project directory explicitly (e.g. from --project-dir flag). */
+export function setProjectDir(dir: string): void {
+  projectDir = dir;
+}
 
 export function getConfigPath(basePath?: string): string {
   if (configPath) return configPath;
-  const base = basePath ?? process.cwd();
+  const base = basePath ?? projectDir ?? process.cwd();
   return path.join(base, CONFIG_DIR, CONFIG_FILENAME);
 }
 
@@ -86,4 +92,5 @@ export async function saveConfig(
 export function clearConfigCache(): void {
   cachedConfig = null;
   configPath = null;
+  projectDir = null;
 }

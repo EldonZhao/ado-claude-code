@@ -23,12 +23,14 @@ arguments:
 
 AI-assisted troubleshooting workflow using Troubleshooting Guides (TSGs).
 
+**IMPORTANT:** Always pass `--project-dir=<user's project root>` so the correct project's TSGs are used, not the plugin's.
+
 ## Workflow
 
 ### 1. Diagnose — Find matching TSGs
 
 ```bash
-node dist/cli.js tsg ts diagnose --symptoms='["pod keeps restarting","OOMKilled"]' --category=deployment
+node dist/cli.js tsg ts diagnose --project-dir=/path/to/project --symptoms='["pod keeps restarting","OOMKilled"]' --category=deployment
 ```
 
 Returns matched TSGs with recommended diagnostic steps.
