@@ -21,6 +21,7 @@ vi.mock("../../src/storage/config.js", () => ({
     sync: { autoSync: false, pullOnStartup: true, conflictResolution: "ask" },
   }),
   resolveStoragePath: vi.fn((p: string) => p),
+  ensureProjectGitignore: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("../../src/cli/helpers.js", () => ({

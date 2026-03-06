@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { output, fatal, parseFlags } from "./helpers.js";
-import { saveConfig, loadConfig, clearConfigCache, resolveStoragePath } from "../storage/config.js";
+import { saveConfig, loadConfig, clearConfigCache, resolveStoragePath, ensureProjectGitignore } from "../storage/config.js";
 import { getCredentials, clearTokenCache } from "../services/ado/auth.js";
 import { AdoConfigSchema, type AdoConfigOutput } from "../schemas/config.schema.js";
 
@@ -75,6 +75,8 @@ async function handleInit(args: string[]): Promise<void> {
   for (const dir of ["epics", "features", "user-stories", "tasks", "bugs"]) {
     await fs.mkdir(path.join(workItemsPath, dir), { recursive: true });
   }
+
+  await ensureProjectGitignore();
 
   clearConfigCache();
   await saveConfig(config);

@@ -1,6 +1,6 @@
 import { getAdoClient, output, fatal, parseFlags } from "./helpers.js";
 import { getWorkItemStorage } from "../storage/index.js";
-import { loadConfig, resolveStoragePath } from "../storage/config.js";
+import { loadConfig, resolveStoragePath, ensureProjectGitignore } from "../storage/config.js";
 import { SyncStateManager } from "../services/sync/state.js";
 import { SyncEngine, type SyncResult } from "../services/sync/engine.js";
 
@@ -61,6 +61,7 @@ export async function handleSync(args: string[]): Promise<void> {
 
 async function createSyncEngine(): Promise<SyncEngine> {
   const config = await loadConfig();
+  await ensureProjectGitignore();
   const client = await getAdoClient(config);
   const storage = await getWorkItemStorage(config);
   const stateManager = new SyncStateManager(

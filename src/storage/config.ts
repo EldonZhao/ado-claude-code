@@ -93,3 +93,50 @@ export function clearConfigCache(): void {
   cachedConfig = null;
   configPath = null;
 }
+
+const GITIGNORE_ENTRIES = [
+  "# ADO plugin — local-only files (do not commit)",
+  ".claude/.ado-config.yaml",
+  ".claude/.ado-token-cache.json",
+  ".claude/ado/work-items/",
+  ".claude/ado/.ado-sync/",
+];
+
+/**
+ * Ensure the tsgs directory exists and the project .gitignore has entries
+ * to exclude local-only ADO files (work-items, sync state, config, token cache).
+ * TSGs are intentionally NOT excluded — they should be tracked in git.
+ */
+export async function ensureProjectGitignore(basePath?: string): Promise<void> {
+  const root = getProjectRoot(basePath);
+
+  // Ensure tsgs directory exists
+  const tsgDir = path.join(root, ".claude", "ado", "tsgs");
+  await fs.mkdir(tsgDir, { recursive: true });
+
+  // Update .gitignore
+  const gitignorePath = path.join(root, ".gitignore");
+  let content = "";
+  try {
+    content = await fs.readFile(gitignorePath, "utf-8");
+  } catch {
+    // No .gitignore yet — will create
+  }
+
+  const lines = content.split("\n");
+  const missing = GITIGNORE_ENTRIES.filter(
+    (entry) => !entry.startsWith("#") && !lines.some((line) => line.trim() === entry),
+  );
+
+  if (missing.length === 0) return;
+
+  // Add comment line if none of our entries exist yet
+  const hasComment = lines.some((l) => l.includes("ADO plugin"));
+  const toAdd = hasComment
+    ? missing
+    : GITIGNORE_ENTRIES.filter((entry) => entry.startsWith("#") || missing.includes(entry));
+
+  const suffix = content.endsWith("\n") || content === "" ? "" : "\n";
+  const block = suffix + toAdd.join("\n") + "\n";
+  await fs.writeFile(gitignorePath, content + block, "utf-8");
+}
