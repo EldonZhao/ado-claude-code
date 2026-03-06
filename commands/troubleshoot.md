@@ -1,15 +1,15 @@
 ---
 name: ado-claude-code:troubleshoot
-description: Diagnose issues, analyze output, and suggest resolutions using TSGs
+description: Diagnose issues, analyze output, suggest resolutions, or run a full troubleshooting workflow using TSGs
 arguments:
   - name: action
-    description: "Action: diagnose, analyze, or suggest"
+    description: "Action: diagnose, analyze, suggest, or run"
     required: true
   - name: symptoms
-    description: "JSON array of symptom strings (for diagnose)"
+    description: "JSON array of symptom strings (for diagnose/run)"
     required: false
   - name: output
-    description: "Diagnostic command output to analyze (for analyze)"
+    description: "Diagnostic command output to analyze (for analyze/run)"
     required: false
   - name: tsgId
     description: "TSG ID for context"
@@ -49,8 +49,25 @@ node dist/cli.js troubleshoot suggest --tsgId=tsg-deployment-001 --rootCause=oom
 
 Returns actionable resolution steps with resolved commands.
 
+### 4. Run — Full troubleshooting workflow
+
+Chains diagnose → diagnostics → analyze → suggest in a single command:
+
+```bash
+node dist/cli.js troubleshoot run --symptoms='["pod keeps restarting"]' --category=deployment --parameters='{"podName":"my-pod"}'
+```
+
+With diagnostic output for analysis:
+
+```bash
+node dist/cli.js troubleshoot run --symptoms='["pod keeps restarting"]' --output="OOMKilled" --parameters='{"podName":"my-pod"}'
+```
+
+Returns the best-matching TSG with prepared diagnostic steps. When `--output` is provided, also analyzes the output for root cause matches and suggests resolutions.
+
 ## Tips
 
+- Use `run` for an end-to-end troubleshooting pass in one call
 - Start with `diagnose` to find the right TSG
 - Use `tsg execute` to run individual diagnostic steps
 - Use `analyze` to process diagnostic output

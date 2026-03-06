@@ -10,8 +10,8 @@ import type { TsgOutput } from "../schemas/tsg.schema.js";
 
 export async function handleTroubleshoot(args: string[]): Promise<void> {
   const action = args[0];
-  if (!action || !["diagnose", "analyze", "suggest"].includes(action)) {
-    fatal("Usage: troubleshoot <diagnose|analyze|suggest> [args]");
+  if (!action || !["diagnose", "analyze", "suggest", "run"].includes(action)) {
+    fatal("Usage: troubleshoot <diagnose|analyze|suggest|run> [args]");
   }
 
   switch (action) {
@@ -21,6 +21,8 @@ export async function handleTroubleshoot(args: string[]): Promise<void> {
       return handleAnalyze(args.slice(1));
     case "suggest":
       return handleSuggest(args.slice(1));
+    case "run":
+      return handleRun(args.slice(1));
   }
 }
 
@@ -248,4 +250,111 @@ function analyzeAgainstAllTsgs(
   }
 
   return matches;
+}
+
+async function handleRun(args: string[]): Promise<void> {
+  const flags = parseFlags(args);
+  if (!flags.symptoms) {
+    fatal("Usage: troubleshoot run --symptoms='[\"symptom1\"]' [--category=...] [--output=<diagnostic output>] [--parameters='{...}']");
+  }
+
+  const symptoms: string[] = JSON.parse(flags.symptoms);
+  const storage = await getTsgStorage();
+  const service = new TsgService(storage);
+  const parameters = flags.parameters ? JSON.parse(flags.parameters) : {};
+
+  // Stage 1: Diagnose — find matching TSGs
+  const searchResults = await service.search({
+    symptoms,
+    category: flags.category,
+  });
+
+  const diagnoseResult = {
+    symptoms,
+    matched: searchResults.length,
+    topTsgs: searchResults.slice(0, 3).map((r) => ({
+      id: r.tsg.id,
+      title: r.tsg.title,
+      score: r.score,
+      matchedOn: r.matchedOn,
+    })),
+  };
+
+  if (searchResults.length === 0) {
+    output({
+      stage: "diagnose",
+      diagnose: diagnoseResult,
+      message: "No matching TSGs found. Create a new TSG for these symptoms.",
+    });
+    return;
+  }
+
+  const topTsg = searchResults[0].tsg;
+  const context = { parameters };
+
+  // Stage 2: Prepare diagnostics — list all steps with resolved commands
+  const missing = getMissingParameters(topTsg, parameters);
+  const diagnosticSteps = topTsg.diagnostics.map((step) => {
+    const result = prepareDiagnosticStep(topTsg, step.id, context);
+    return result;
+  });
+
+  // Stage 3: Analyze — if diagnostic output provided, match patterns
+  let analyzeResult: { matchCount: number; matches: PatternMatch[]; rootCauses: string[] } | undefined;
+  if (flags.output) {
+    const tsgMatches = analyzeWithTsg(flags.output, topTsg);
+    const allTsgs = await storage.listAll();
+    const crossMatches = analyzeAgainstAllTsgs(flags.output, allTsgs);
+    const allMatches = [...tsgMatches, ...crossMatches];
+
+    // Deduplicate
+    const seen = new Set<string>();
+    const unique = allMatches.filter((m) => {
+      const key = `${m.tsgId}:${m.rootCause}:${m.pattern}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    const rootCauses = [...new Set(unique.map((m) => m.rootCause).filter(Boolean))];
+    analyzeResult = { matchCount: unique.length, matches: unique, rootCauses };
+  }
+
+  // Stage 4: Suggest — if root causes found, get resolution for the first one
+  let suggestResult: Record<string, unknown> | undefined;
+  if (analyzeResult && analyzeResult.rootCauses.length > 0) {
+    const rootCause = analyzeResult.rootCauses[0];
+    try {
+      const resolution = prepareResolution(topTsg, rootCause, context);
+      suggestResult = {
+        tsgId: topTsg.id,
+        rootCause,
+        resolution: {
+          name: resolution.name,
+          description: resolution.description,
+          steps: resolution.steps.map((step, i) => ({
+            ...step,
+            resolvedCommand: resolution.resolvedSteps[i].command,
+          })),
+        },
+      };
+    } catch {
+      // Resolution not found for this root cause — not fatal
+    }
+  }
+
+  const result: Record<string, unknown> = {
+    tsgId: topTsg.id,
+    tsgTitle: topTsg.title,
+    diagnose: diagnoseResult,
+    diagnosticSteps,
+    missingParameters: missing,
+  };
+  if (analyzeResult) result.analyze = analyzeResult;
+  if (suggestResult) result.suggest = suggestResult;
+  if (!flags.output && !suggestResult) {
+    result.nextStep = "Run the diagnostic commands above, then re-run with --output=<result> to analyze";
+  }
+
+  output(result);
 }

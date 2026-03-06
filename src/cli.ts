@@ -13,9 +13,9 @@ Domains:
   work-items   get|list|create|update|query|plan|workitem-plan
   sync         pull|push|full
   clear        [--confirm]
-  tsg          create|get|update|list|search|execute
+  tsg          create|get|update|list|search|execute|score
   setup        init|validate|show
-  troubleshoot diagnose|analyze|suggest
+  troubleshoot diagnose|analyze|suggest|run
 
 Examples:
   ado-claude-code setup init --organization=https://dev.azure.com/myorg --project=MyProject
