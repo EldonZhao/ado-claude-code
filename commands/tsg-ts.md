@@ -1,5 +1,5 @@
 ---
-name: ado-claude-code:troubleshoot
+name: ado-claude-code:tsg-ts
 description: Diagnose issues, analyze output, suggest resolutions, or run a full troubleshooting workflow using TSGs
 arguments:
   - name: action
@@ -28,7 +28,7 @@ AI-assisted troubleshooting workflow using Troubleshooting Guides (TSGs).
 ### 1. Diagnose — Find matching TSGs
 
 ```bash
-node dist/cli.js troubleshoot diagnose --symptoms='["pod keeps restarting","OOMKilled"]' --category=deployment
+node dist/cli.js tsg ts diagnose --symptoms='["pod keeps restarting","OOMKilled"]' --category=deployment
 ```
 
 Returns matched TSGs with recommended diagnostic steps.
@@ -36,7 +36,7 @@ Returns matched TSGs with recommended diagnostic steps.
 ### 2. Analyze — Analyze diagnostic output
 
 ```bash
-node dist/cli.js troubleshoot analyze --output="<paste diagnostic output>" --tsgId=tsg-deployment-001 --stepId=check-pod-status
+node dist/cli.js tsg ts analyze --output="<paste diagnostic output>" --tsgId=tsg-deployment-001 --stepId=check-pod-status
 ```
 
 Matches patterns from TSG analysis rules to identify root causes.
@@ -44,7 +44,7 @@ Matches patterns from TSG analysis rules to identify root causes.
 ### 3. Suggest — Get resolution steps
 
 ```bash
-node dist/cli.js troubleshoot suggest --tsgId=tsg-deployment-001 --rootCause=oom --parameters='{"podName":"my-pod","namespace":"default"}'
+node dist/cli.js tsg ts suggest --tsgId=tsg-deployment-001 --rootCause=oom --parameters='{"podName":"my-pod","namespace":"default"}'
 ```
 
 Returns actionable resolution steps with resolved commands.
@@ -54,13 +54,13 @@ Returns actionable resolution steps with resolved commands.
 Chains diagnose → diagnostics → analyze → suggest in a single command:
 
 ```bash
-node dist/cli.js troubleshoot run --symptoms='["pod keeps restarting"]' --category=deployment --parameters='{"podName":"my-pod"}'
+node dist/cli.js tsg ts run --symptoms='["pod keeps restarting"]' --category=deployment --parameters='{"podName":"my-pod"}'
 ```
 
 With diagnostic output for analysis:
 
 ```bash
-node dist/cli.js troubleshoot run --symptoms='["pod keeps restarting"]' --output="OOMKilled" --parameters='{"podName":"my-pod"}'
+node dist/cli.js tsg ts run --symptoms='["pod keeps restarting"]' --output="OOMKilled" --parameters='{"podName":"my-pod"}'
 ```
 
 Returns the best-matching TSG with prepared diagnostic steps. When `--output` is provided, also analyzes the output for root cause matches and suggests resolutions.

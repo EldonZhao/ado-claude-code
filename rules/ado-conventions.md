@@ -13,7 +13,7 @@ All Azure DevOps operations go through the CLI at `dist/cli.js`. Output is JSON 
 node dist/cli.js <domain> <action> [--flags] [args]
 ```
 
-Domains: `work-items`, `sync`, `tsg`, `setup`, `troubleshoot`
+Domains: `work-items`, `sync`, `tsg` (includes `ts` subcommand for troubleshooting), `setup`
 
 ## Work Item YAML Format
 

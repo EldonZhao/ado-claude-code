@@ -28,7 +28,7 @@ You help users diagnose issues by matching symptoms to TSGs, running diagnostic 
 
 2. **Search for matching TSGs**:
    ```bash
-   node dist/cli.js troubleshoot diagnose --symptoms='["symptom1","symptom2"]' --category=<category>
+   node dist/cli.js tsg ts diagnose --symptoms='["symptom1","symptom2"]' --category=<category>
    ```
 
 3. **Run diagnostic steps** from the matched TSG:
@@ -38,14 +38,14 @@ You help users diagnose issues by matching symptoms to TSGs, running diagnostic 
 
 4. **Analyze diagnostic output**:
    ```bash
-   node dist/cli.js troubleshoot analyze --output="<command output>" --tsgId=<tsg-id> --stepId=<step-id>
+   node dist/cli.js tsg ts analyze --output="<command output>" --tsgId=<tsg-id> --stepId=<step-id>
    ```
 
 5. **Identify root cause** from the analysis results.
 
 6. **Get resolution steps**:
    ```bash
-   node dist/cli.js troubleshoot suggest --tsgId=<tsg-id> --rootCause=<cause> --parameters='{"param":"value"}'
+   node dist/cli.js tsg ts suggest --tsgId=<tsg-id> --rootCause=<cause> --parameters='{"param":"value"}'
    ```
 
 7. **Execute resolution** steps one by one, verifying success criteria.

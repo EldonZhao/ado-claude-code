@@ -103,7 +103,7 @@ node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --pr
 | `/ado-claude-code:query` | Run WIQL queries or list local items |
 | `/ado-claude-code:workitem-create` | Create a new work item in Azure DevOps |
 | `/ado-claude-code:clear` | Clear all synced work items from local storage |
-| `/ado-claude-code:troubleshoot` | Diagnose issues, analyze output, suggest resolutions |
+| `/ado-claude-code:tsg-ts` | Diagnose issues, analyze output, suggest resolutions |
 | `/ado-claude-code:tsg-create` | Create and manage troubleshooting guides |
 | `/ado-claude-code:setup` | Initialize, validate, login/logout, or show configuration |
 
@@ -179,11 +179,11 @@ node dist/cli.js tsg search --query="..." [--symptoms='[...]']
 node dist/cli.js tsg execute <id> [--stepId=...] [--rootCause=...] [--parameters='{...}']
 ```
 
-### Troubleshooting
+### Troubleshooting (via `tsg ts`)
 ```bash
-node dist/cli.js troubleshoot diagnose --symptoms='["symptom1","symptom2"]'
-node dist/cli.js troubleshoot analyze --output="<diagnostic output>" [--tsgId=...]
-node dist/cli.js troubleshoot suggest --tsgId=<id> --rootCause=<cause>
+node dist/cli.js tsg ts diagnose --symptoms='["symptom1","symptom2"]'
+node dist/cli.js tsg ts analyze --output="<diagnostic output>" [--tsgId=...]
+node dist/cli.js tsg ts suggest --tsgId=<id> --rootCause=<cause>
 ```
 
 ## Development
@@ -203,9 +203,9 @@ src/
   cli/
     work-items.ts       Work item handlers
     sync.ts             Sync handlers
-    tsg.ts              TSG handlers
+    tsg.ts              TSG handlers (includes ts subcommand for troubleshooting)
     setup.ts            Setup handlers
-    troubleshoot.ts     Troubleshooting handlers
+    troubleshoot.ts     Troubleshooting handlers (accessed via tsg ts)
     helpers.ts          Shared CLI utilities
   services/
     ado/                ADO client, auth

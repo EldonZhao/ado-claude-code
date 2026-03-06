@@ -29,8 +29,7 @@ node dist/cli.js <domain> <action> [--flags]
 - `work-items` — get, list, create, update, query, plan (code), workitem-plan (breakdown)
 - `sync` — pull, push, full
 - `clear` — [--confirm]
-- `tsg` — create, get, update, list, search, execute
-- `troubleshoot` — diagnose, analyze, suggest
+- `tsg` — create, get, update, list, search, execute, score, ts (troubleshoot)
 
 ## Architecture
 - `src/cli.ts` — CLI entry point (arg parsing + routing)
@@ -38,9 +37,9 @@ node dist/cli.js <domain> <action> [--flags]
   - `work-items.ts` — Work item CRUD, query, plan (code), workitem-plan (breakdown)
   - `sync.ts` — Bidirectional sync
   - `clear.ts` — Clear synced work items
-  - `tsg.ts` — TSG CRUD, search, execute
+  - `tsg.ts` — TSG CRUD, search, execute, score, ts (troubleshoot)
   - `setup.ts` — Config init/validate/show
-  - `troubleshoot.ts` — Diagnose, analyze, suggest
+  - `troubleshoot.ts` — Diagnose, analyze, suggest, run (accessed via `tsg ts`)
   - `helpers.ts` — Shared CLI helpers (ADO client, formatters, output)
 - `src/services/` — Business logic
   - `ado/` — ADO client, auth, types

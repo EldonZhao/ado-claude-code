@@ -9,11 +9,12 @@ import {
   formatTsgOverview,
 } from "../services/tsg/executor.js";
 import { getTsgTemplate, getTemplateCategories } from "../services/tsg/templates.js";
+import { handleTroubleshoot } from "./troubleshoot.js";
 
 export async function handleTsg(args: string[]): Promise<void> {
   const action = args[0];
   if (!action) {
-    fatal("Usage: tsg <create|get|update|list|search|execute|score> [args]");
+    fatal("Usage: tsg <create|get|update|list|search|execute|score|ts> [args]");
   }
 
   switch (action) {
@@ -31,8 +32,10 @@ export async function handleTsg(args: string[]): Promise<void> {
       return handleExecute(args.slice(1));
     case "score":
       return handleScore(args.slice(1));
+    case "ts":
+      return handleTroubleshoot(args.slice(1));
     default:
-      fatal(`Unknown tsg action: ${action}. Use create|get|update|list|search|execute|score`);
+      fatal(`Unknown tsg action: ${action}. Use create|get|update|list|search|execute|score|ts`);
   }
 }
 

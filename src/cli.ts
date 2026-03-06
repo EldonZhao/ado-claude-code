@@ -13,16 +13,15 @@ Domains:
   work-items   get|list|create|update|query|plan|workitem-plan
   sync         pull|push|full
   clear        [--confirm]
-  tsg          create|get|update|list|search|execute|score
+  tsg          create|get|update|list|search|execute|score|ts
   setup        init|validate|show
-  troubleshoot diagnose|analyze|suggest|run
 
 Examples:
   ado-claude-code setup init --organization=https://dev.azure.com/myorg --project=MyProject
   ado-claude-code sync pull --query="SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'Active'"
   ado-claude-code work-items get 1234
   ado-claude-code tsg list --category=deployment
-  ado-claude-code troubleshoot diagnose --symptoms='["pod restarting"]'
+  ado-claude-code tsg ts diagnose --symptoms='["pod restarting"]'
 `;
 
 async function main(): Promise<void> {
