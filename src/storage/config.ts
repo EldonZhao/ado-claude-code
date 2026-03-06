@@ -92,5 +92,4 @@ export async function saveConfig(
 export function clearConfigCache(): void {
   cachedConfig = null;
   configPath = null;
-  projectDir = null;
 }

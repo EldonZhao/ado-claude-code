@@ -65,7 +65,7 @@ async function handleInit(args: string[]): Promise<void> {
   });
 
   // Ensure data directories exist
-  const basePath = path.resolve(config.storage.basePath);
+  const basePath = resolveStoragePath(config.storage.basePath);
   const workItemsPath = path.resolve(basePath, config.storage.workItemsPath);
   const tsgPath = path.resolve(basePath, config.storage.tsgPath);
 
