@@ -1,3 +1,4 @@
+import * as fs from "node:fs/promises";
 import { output, fatal, parseFlags } from "./helpers.js";
 import { getTsgStorage } from "../storage/index.js";
 import { TsgService } from "../services/tsg/index.js";
@@ -9,6 +10,7 @@ import {
   formatTsgOverview,
 } from "../services/tsg/executor.js";
 import { getTsgTemplate, getTemplateCategories } from "../services/tsg/templates.js";
+import { markdownToTsg } from "../services/tsg/markdown.js";
 import { handleTroubleshoot } from "./troubleshoot.js";
 
 export async function handleTsg(args: string[]): Promise<void> {
@@ -43,12 +45,17 @@ async function handleCreate(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const storage = await getTsgStorage();
 
+  // --file: import from file
+  if (flags.file) {
+    return importFromFile(flags.file, flags, storage);
+  }
+
   let input: Record<string, unknown>;
   if (flags.json) {
     input = JSON.parse(flags.json);
   } else {
     if (!flags.title || !flags.category) {
-      fatal("Usage: tsg create --title=<title> --category=<cat> [--template] [--tags='[...]'] [--symptoms='[...]'] or --json='{...}'");
+      fatal("Usage: tsg create --title=<title> --category=<cat> [--template] [--file=<path>] [--tags='[...]'] [--symptoms='[...]'] or --json='{...}'");
     }
     input = {
       title: flags.title,
@@ -99,6 +106,73 @@ async function handleCreate(args: string[]): Promise<void> {
 
   const filePath = await storage.save(tsg);
   output({ id: tsg.id, title: tsg.title, path: filePath });
+}
+
+async function importFromFile(
+  filePath: string,
+  flags: Record<string, string>,
+  storage: Awaited<ReturnType<typeof getTsgStorage>>,
+): Promise<void> {
+  let content: string;
+  try {
+    content = await fs.readFile(filePath, "utf-8");
+  } catch {
+    fatal(`File not found: ${filePath}`);
+  }
+
+  let input: Record<string, unknown>;
+
+  if (content.trimStart().startsWith("---")) {
+    // TSG-format markdown with frontmatter
+    try {
+      const parsed = markdownToTsg(content);
+      input = { ...parsed };
+    } catch (err) {
+      fatal(`Failed to parse TSG markdown: ${err instanceof Error ? err.message : String(err)}`);
+    }
+    // Allow flag overrides
+    if (flags.title) input.title = flags.title;
+    if (flags.category) input.category = flags.category;
+    if (flags.author) input.author = flags.author;
+    if (flags.tags) input.tags = JSON.parse(flags.tags);
+    if (flags.symptoms) input.symptoms = JSON.parse(flags.symptoms);
+  } else {
+    // Plain text import — wrap as a single manual diagnostic step
+    if (!flags.title || !flags.category) {
+      fatal("Plain text file import requires --title and --category flags");
+    }
+    input = {
+      title: flags.title,
+      category: flags.category,
+      author: flags.author,
+      tags: flags.tags ? JSON.parse(flags.tags) : [],
+      symptoms: flags.symptoms ? JSON.parse(flags.symptoms) : [],
+      relatedErrors: flags.relatedErrors ? JSON.parse(flags.relatedErrors) : [],
+      diagnostics: [
+        {
+          id: "imported-content",
+          name: flags.title,
+          manual: true,
+          guidance: content.trim(),
+        },
+      ],
+    };
+  }
+
+  // Generate ID
+  const category = input.category as string;
+  const existing = await storage.listByCategory(category);
+  const nextNum = existing.length + 1;
+  const id = `tsg-${category}-${String(nextNum).padStart(3, "0")}`;
+
+  const tsg = TsgSchema.parse({
+    ...input,
+    id,
+    lastUpdated: new Date().toISOString().split("T")[0],
+  });
+
+  const savedPath = await storage.save(tsg);
+  output({ id: tsg.id, title: tsg.title, path: savedPath, importedFrom: filePath });
 }
 
 async function handleGet(args: string[]): Promise<void> {

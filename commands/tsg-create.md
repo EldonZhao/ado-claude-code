@@ -41,6 +41,22 @@ Available templates: deployment, database, networking, authentication, performan
 node dist/cli.js tsg create --json='{"title":"...","category":"...","diagnostics":[...],"resolutions":{...}}'
 ```
 
+### Import from file
+
+Import an existing TSG markdown file (with YAML frontmatter):
+
+```bash
+node dist/cli.js tsg create --file=./existing-tsg.md
+```
+
+Import a plain text file as a manual diagnostic step (requires `--title` and `--category`):
+
+```bash
+node dist/cli.js tsg create --file=./docs/runbook-oom.md --title="OOM Runbook" --category=deployment
+```
+
+Flags like `--title`, `--category`, `--author`, `--tags`, and `--symptoms` override values from the imported file.
+
 ## Get a TSG
 
 ```bash

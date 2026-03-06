@@ -1,7 +1,8 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { stringify as stringifyYaml, parse as parseYaml } from "yaml";
+import { parse as parseYaml } from "yaml";
 import { TsgSchema, type TsgOutput } from "../schemas/tsg.schema.js";
+import { tsgToMarkdown, markdownToTsg } from "../services/tsg/markdown.js";
 import { TsgError } from "../utils/errors.js";
 import { logger } from "../utils/logger.js";
 
@@ -13,6 +14,10 @@ export class TsgStorage {
   }
 
   private getFilePath(category: string, slug: string): string {
+    return path.join(this.getCategoryDir(category), `${slug}.md`);
+  }
+
+  private getLegacyFilePath(category: string, slug: string): string {
     return path.join(this.getCategoryDir(category), `${slug}.yaml`);
   }
 
@@ -33,9 +38,19 @@ export class TsgStorage {
     const slug = this.slugify(tsg.title);
     const filePath = this.getFilePath(tsg.category, slug);
     await fs.mkdir(path.dirname(filePath), { recursive: true });
-    const yamlStr = stringifyYaml(tsg, { lineWidth: 120 });
-    await fs.writeFile(filePath, yamlStr, "utf-8");
+    const mdStr = tsgToMarkdown(tsg);
+    await fs.writeFile(filePath, mdStr, "utf-8");
     logger.debug({ id: tsg.id, path: filePath }, "Saved TSG");
+
+    // Clean up legacy .yaml file if it exists
+    const legacyPath = this.getLegacyFilePath(tsg.category, slug);
+    try {
+      await fs.unlink(legacyPath);
+      logger.debug({ path: legacyPath }, "Removed legacy YAML TSG file");
+    } catch {
+      // Legacy file doesn't exist — that's fine
+    }
+
     return filePath;
   }
 
@@ -47,14 +62,17 @@ export class TsgStorage {
       throw new TsgError(`TSG file not found: ${filePath}`);
     }
 
-    const parsed = parseYaml(raw);
-    const result = TsgSchema.safeParse(parsed);
-    if (!result.success) {
+    if (filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
+      return this.parseLegacyYaml(raw, filePath);
+    }
+
+    try {
+      return markdownToTsg(raw);
+    } catch (err) {
       throw new TsgError(
-        `Invalid TSG file ${filePath}: ${JSON.stringify(result.error.issues)}`,
+        `Invalid TSG markdown file ${filePath}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
-    return result.data;
   }
 
   async loadById(id: string): Promise<TsgOutput | null> {
@@ -70,6 +88,13 @@ export class TsgStorage {
     } catch {
       // File doesn't exist
     }
+    // Also try to clean up legacy file
+    const legacyPath = this.getLegacyFilePath(category, slug);
+    try {
+      await fs.unlink(legacyPath);
+    } catch {
+      // Legacy file doesn't exist
+    }
   }
 
   async listByCategory(category: string): Promise<TsgOutput[]> {
@@ -83,7 +108,7 @@ export class TsgStorage {
 
     const tsgs: TsgOutput[] = [];
     for (const entry of entries) {
-      if (!entry.endsWith(".yaml")) continue;
+      if (!entry.endsWith(".md") && !entry.endsWith(".yaml")) continue;
       try {
         tsgs.push(await this.loadByFile(path.join(dir, entry)));
       } catch (err) {
@@ -137,5 +162,16 @@ export class TsgStorage {
       }
     }
     return categories;
+  }
+
+  private parseLegacyYaml(raw: string, filePath: string): TsgOutput {
+    const parsed = parseYaml(raw);
+    const result = TsgSchema.safeParse(parsed);
+    if (!result.success) {
+      throw new TsgError(
+        `Invalid legacy TSG file ${filePath}: ${JSON.stringify(result.error.issues)}`,
+      );
+    }
+    return result.data;
   }
 }
