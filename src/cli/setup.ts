@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { output, fatal, parseFlags } from "./helpers.js";
-import { saveConfig, loadConfig, clearConfigCache } from "../storage/config.js";
+import { saveConfig, loadConfig, clearConfigCache, resolveStoragePath } from "../storage/config.js";
 import { getCredentials, clearTokenCache } from "../services/ado/auth.js";
 import { AdoConfigSchema, type AdoConfigOutput } from "../schemas/config.schema.js";
 
@@ -152,7 +152,7 @@ async function handleValidate(): Promise<void> {
   }
 
   // Check storage
-  const basePath = path.resolve(config.storage.basePath);
+  const basePath = resolveStoragePath(config.storage.basePath);
   try {
     await fs.access(basePath);
     checks.push({ check: "storage", status: "ok", detail: basePath });

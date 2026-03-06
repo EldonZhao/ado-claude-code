@@ -4,7 +4,7 @@ import type { AdoConfigOutput } from "../schemas/config.schema.js";
 import type { LocalWorkItemOutput } from "../schemas/work-item.schema.js";
 import { adoToLocal } from "../services/sync/mapper.js";
 import { SyncStateManager } from "../services/sync/state.js";
-import { loadConfig } from "../storage/config.js";
+import { loadConfig, resolveStoragePath } from "../storage/config.js";
 
 let clientInstance: AdoClient | null = null;
 let syncStateInstance: SyncStateManager | null = null;
@@ -24,7 +24,7 @@ export async function getSyncStateManager(
   if (syncStateInstance) return syncStateInstance;
   const config = configOverride ?? (await loadConfig());
   syncStateInstance = new SyncStateManager(
-    config.storage.basePath,
+    resolveStoragePath(config.storage.basePath),
     config.azure_devops.organization,
     config.azure_devops.project,
   );

@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import { output, fatal, parseFlags } from "./helpers.js";
-import { loadConfig } from "../storage/config.js";
+import { loadConfig, resolveStoragePath } from "../storage/config.js";
 import { getWorkItemStorage } from "../storage/index.js";
 import { SyncStateManager } from "../services/sync/state.js";
 import { SyncEngine } from "../services/sync/engine.js";
@@ -14,7 +14,7 @@ export async function handleClear(args: string[]): Promise<void> {
   const client = await getAdoClient(config);
   const storage = await getWorkItemStorage(config);
   const stateManager = new SyncStateManager(
-    config.storage.basePath,
+    resolveStoragePath(config.storage.basePath),
     config.azure_devops.organization,
     config.azure_devops.project,
   );

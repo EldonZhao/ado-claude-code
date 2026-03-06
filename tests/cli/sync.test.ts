@@ -20,6 +20,7 @@ vi.mock("../../src/storage/config.js", () => ({
     storage: { basePath: "./.claude/ado", workItemsPath: "work-items", tsgPath: "tsgs" },
     sync: { autoSync: false, pullOnStartup: true, conflictResolution: "ask" },
   }),
+  resolveStoragePath: vi.fn((p: string) => p),
 }));
 
 vi.mock("../../src/cli/helpers.js", () => ({

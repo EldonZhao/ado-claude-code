@@ -17,6 +17,26 @@ export function getConfigPath(basePath?: string): string {
   return path.join(base, CONFIG_DIR, CONFIG_FILENAME);
 }
 
+/**
+ * Derive the project root from the config file path.
+ * Config lives at `<projectRoot>/.claude/.ado-config.yaml`, so root is two
+ * levels up from the config file.
+ */
+export function getProjectRoot(basePath?: string): string {
+  const cfgPath = getConfigPath(basePath);
+  // cfgPath = <root>/.claude/.ado-config.yaml → dirname twice = <root>
+  return path.dirname(path.dirname(cfgPath));
+}
+
+/**
+ * Resolve a storage basePath (potentially relative) against the project root
+ * so that paths are stable regardless of process.cwd().
+ */
+export function resolveStoragePath(storagePath: string, basePath?: string): string {
+  if (path.isAbsolute(storagePath)) return storagePath;
+  return path.resolve(getProjectRoot(basePath), storagePath);
+}
+
 export async function loadConfig(basePath?: string): Promise<AdoConfigOutput> {
   if (cachedConfig) return cachedConfig;
 

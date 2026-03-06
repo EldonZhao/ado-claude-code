@@ -1,6 +1,6 @@
 import { getAdoClient, output, fatal, parseFlags } from "./helpers.js";
 import { getWorkItemStorage } from "../storage/index.js";
-import { loadConfig } from "../storage/config.js";
+import { loadConfig, resolveStoragePath } from "../storage/config.js";
 import { SyncStateManager } from "../services/sync/state.js";
 import { SyncEngine, type SyncResult } from "../services/sync/engine.js";
 
@@ -64,7 +64,7 @@ async function createSyncEngine(): Promise<SyncEngine> {
   const client = await getAdoClient(config);
   const storage = await getWorkItemStorage(config);
   const stateManager = new SyncStateManager(
-    config.storage.basePath,
+    resolveStoragePath(config.storage.basePath),
     config.azure_devops.organization,
     config.azure_devops.project,
   );
