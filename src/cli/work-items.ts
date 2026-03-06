@@ -179,7 +179,7 @@ async function handleUpdate(args: string[]): Promise<void> {
     const previousState = currentItem.state;
 
     const terminalState = await client.getTerminalState(currentItem.type);
-    const updatedAdo = await client.updateWorkItem({ id, state: terminalState });
+    const updatedAdo = await client.updateWorkItem({ id, state: terminalState, customFields: getBugCompletionFields(currentItem.type) });
     const localItem = mapAdoToLocal(updatedAdo);
     await saveAndTrack(storage, localItem);
 
@@ -271,6 +271,14 @@ async function handleQuery(args: string[]): Promise<void> {
 
 const PLAN_ELIGIBLE_STATES = new Set(["New", "To Do", "Proposed", "Approved"]);
 
+/** Bug type requires ResolvedReason when transitioning to a terminal state. */
+function getBugCompletionFields(type: string): Record<string, unknown> | undefined {
+  if (type === "Bug") {
+    return { "Microsoft.VSTS.Common.ResolvedReason": "Fixed" };
+  }
+  return undefined;
+}
+
 async function handlePlan(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
@@ -333,7 +341,7 @@ async function handlePlan(args: string[]): Promise<void> {
 async function handleWorkitemPlan(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
-  if (!idStr) fatal("Usage: work-items workitem-plan <id> [--items=<json>] [--create] [--no-update]");
+  if (!idStr) fatal("Usage: work-items workitem-plan <id> [--items=<json>] [--create] [--complete] [--no-update]");
 
   const id = parseInt(idStr, 10);
   if (isNaN(id)) fatal(`Invalid work item ID: ${idStr}`);
@@ -382,8 +390,40 @@ async function handleWorkitemPlan(args: string[]): Promise<void> {
     }
   }
 
-  // No items → return guidance
+  // No items → return guidance (or just complete if --complete)
   if (!flags.items) {
+    const isCompleteOnly = flags.complete === "true" || flags.complete === "";
+
+    if (isCompleteOnly && !skipUpdate) {
+      try {
+        const terminalState = await client.getTerminalState(parent.type);
+        const prevState = parent.state;
+        const updatedAdo = await client.updateWorkItem({ id, state: terminalState, customFields: getBugCompletionFields(parent.type) });
+        parent = mapAdoToLocal(updatedAdo);
+        await saveAndTrack(storage, parent);
+
+        let completionComment: { id: number; text: string } | undefined;
+        try {
+          const commentText = `<p>Work item marked as completed by Claude at <code>${new Date().toISOString()}</code></p>\n<p>State: <strong>${prevState}</strong> → <strong>${terminalState}</strong></p>`;
+          completionComment = await client.addComment(id, commentText);
+        } catch (err) {
+          process.stderr.write(`Warning: Failed to add completion comment: ${err}\n`);
+        }
+
+        const result: Record<string, unknown> = {
+          ...parent,
+          completed: true,
+          stateChange: { from: prevState, to: terminalState },
+        };
+        if (commentAdded) result.planCommentAdded = commentAdded;
+        if (completionComment) result.completionCommentAdded = completionComment;
+        output(result);
+        return;
+      } catch (err) {
+        process.stderr.write(`Warning: Failed to complete work item: ${err}\n`);
+      }
+    }
+
     const guidance = getBreakdownGuidance(parent);
     const result: Record<string, unknown> = {
       parent: { id: parent.id, type: parent.type, title: parent.title },
@@ -453,10 +493,41 @@ async function handleWorkitemPlan(args: string[]): Promise<void> {
     }
   }
 
+  // --complete: transition parent to terminal state
+  const isComplete = flags.complete === "true" || flags.complete === "";
+  let completionResult: { stateChange: { from: string; to: string }; commentAdded?: { id: number; text: string } } | undefined;
+  if (isComplete && !skipUpdate) {
+    try {
+      const terminalState = await client.getTerminalState(parent.type);
+      const prevState = parent.state;
+      const updatedAdo = await client.updateWorkItem({ id, state: terminalState, customFields: getBugCompletionFields(parent.type) });
+      parent = mapAdoToLocal(updatedAdo);
+      await saveAndTrack(storage, parent);
+
+      let completionComment: { id: number; text: string } | undefined;
+      try {
+        const commentText = `<p>Work item marked as completed by Claude at <code>${new Date().toISOString()}</code></p>\n<p>State: <strong>${prevState}</strong> → <strong>${terminalState}</strong></p>`;
+        completionComment = await client.addComment(id, commentText);
+      } catch (err) {
+        process.stderr.write(`Warning: Failed to add completion comment: ${err}\n`);
+      }
+
+      completionResult = { stateChange: { from: prevState, to: terminalState } };
+      if (completionComment) completionResult.commentAdded = completionComment;
+    } catch (err) {
+      process.stderr.write(`Warning: Failed to complete work item: ${err}\n`);
+    }
+  }
+
   const result: Record<string, unknown> = { created: created.length, items: created };
   if (stateChanged) result.stateChange = { from: previousState, to: "In Progress" };
   if (commentAdded) result.commentAdded = commentAdded;
   if (createCommentAdded) result.createCommentAdded = createCommentAdded;
+  if (completionResult) {
+    result.completed = true;
+    result.completionStateChange = completionResult.stateChange;
+    if (completionResult.commentAdded) result.completionCommentAdded = completionResult.commentAdded;
+  }
 
   output(result);
 }

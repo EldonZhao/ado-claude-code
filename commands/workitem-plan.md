@@ -11,6 +11,9 @@ arguments:
   - name: create
     description: "Whether to create items in ADO (true/false, default: false)"
     required: false
+  - name: complete
+    description: "Transition work item to terminal state (Done/Closed) after creating items (default: false)"
+    required: false
   - name: no-update
     description: "Skip automatic state transition and comment (default: false)"
     required: false
@@ -52,6 +55,7 @@ node dist/cli.js work-items workitem-plan 1234 --items='[...]' --create
 
 ## Flags
 
+- `--complete` — Transition the work item to its terminal state (e.g., Done, Closed). Works standalone or with `--items --create`.
 - `--no-update` — Skip automatic state transition and comment. Only generates the breakdown guidance.
 
 ## Side Effects
