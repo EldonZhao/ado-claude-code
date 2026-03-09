@@ -52,7 +52,6 @@ npm install && npm run build
 
 # Copy plugin components into your project's .claude/ directory
 cp -r commands/ /path/to/your-project/.claude/commands/
-cp -r skills/ /path/to/your-project/.claude/skills/
 cp -r agents/ /path/to/your-project/.claude/agents/
 cp -r rules/ /path/to/your-project/.claude/rules/
 ```
@@ -106,15 +105,6 @@ node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --pr
 | `/ado-claude-code:tsg-ts` | Diagnose issues, analyze output, suggest resolutions |
 | `/ado-claude-code:tsg-create` | Create and manage troubleshooting guides |
 | `/ado-claude-code:setup` | Initialize, validate, login/logout, or show configuration |
-
-### Skills (4)
-
-| Skill | Description |
-|-------|-------------|
-| `ado-work-items` | ADO work item types, hierarchy, states, field mappings |
-| `ado-tsg` | TSG structure, categories, diagnostic patterns |
-| `ado-troubleshooting` | Troubleshooting methodology and workflow |
-| `ado-planning` | Work item breakdown and estimation guidance |
 
 ### Agents (2)
 
@@ -218,7 +208,6 @@ src/
 
 .claude-plugin/         Plugin manifest + marketplace catalog
 commands/               Slash commands (9)
-skills/                 Domain knowledge (4)
 agents/                 Specialist subagents (2)
 rules/                  Always-active conventions
 
