@@ -11,7 +11,7 @@ import type { TsgOutput } from "../schemas/tsg.schema.js";
 export async function handleTroubleshoot(args: string[]): Promise<void> {
   const action = args[0];
   if (!action || !["diagnose", "analyze", "suggest", "run"].includes(action)) {
-    fatal("Usage: tsg ts <diagnose|analyze|suggest|run> [args]");
+    fatal("Usage: tsg <diagnose|analyze|suggest|run> [args]");
   }
 
   switch (action) {
@@ -26,10 +26,10 @@ export async function handleTroubleshoot(args: string[]): Promise<void> {
   }
 }
 
-async function handleDiagnose(args: string[]): Promise<void> {
+export async function handleDiagnose(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   if (!flags.symptoms) {
-    fatal("Usage: tsg ts diagnose --symptoms='[\"symptom1\",\"symptom2\"]' [--category=...]");
+    fatal("Usage: tsg diagnose --symptoms='[\"symptom1\",\"symptom2\"]' [--category=...]");
   }
 
   const symptoms: string[] = JSON.parse(flags.symptoms);
@@ -72,10 +72,10 @@ async function handleDiagnose(args: string[]): Promise<void> {
   });
 }
 
-async function handleAnalyze(args: string[]): Promise<void> {
+export async function handleAnalyze(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   if (!flags.output) {
-    fatal("Usage: tsg ts analyze --output=<diagnostic output> [--tsgId=...] [--stepId=...]");
+    fatal("Usage: tsg analyze --output=<diagnostic output> [--tsgId=...] [--stepId=...]");
   }
 
   const diagnosticOutput = flags.output;
@@ -122,10 +122,10 @@ async function handleAnalyze(args: string[]): Promise<void> {
   });
 }
 
-async function handleSuggest(args: string[]): Promise<void> {
+export async function handleSuggest(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   if (!flags.tsgId || !flags.rootCause) {
-    fatal("Usage: tsg ts suggest --tsgId=<id> --rootCause=<cause> [--parameters='{...}']");
+    fatal("Usage: tsg suggest --tsgId=<id> --rootCause=<cause> [--parameters='{...}']");
   }
 
   const storage = await getTsgStorage();
@@ -252,10 +252,10 @@ function analyzeAgainstAllTsgs(
   return matches;
 }
 
-async function handleRun(args: string[]): Promise<void> {
+export async function handleRun(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   if (!flags.symptoms) {
-    fatal("Usage: tsg ts run --symptoms='[\"symptom1\"]' [--category=...] [--output=<diagnostic output>] [--parameters='{...}']");
+    fatal("Usage: tsg run --symptoms='[\"symptom1\"]' [--category=...] [--output=<diagnostic output>] [--parameters='{...}']");
   }
 
   const symptoms: string[] = JSON.parse(flags.symptoms);

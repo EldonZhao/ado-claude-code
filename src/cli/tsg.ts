@@ -11,12 +11,12 @@ import {
 } from "../services/tsg/executor.js";
 import { getTsgTemplate, getTemplateCategories } from "../services/tsg/templates.js";
 import { markdownToTsg } from "../services/tsg/markdown.js";
-import { handleTroubleshoot } from "./troubleshoot.js";
+import { handleTroubleshoot, handleDiagnose, handleAnalyze, handleSuggest, handleRun } from "./troubleshoot.js";
 
 export async function handleTsg(args: string[]): Promise<void> {
   const action = args[0];
   if (!action) {
-    fatal("Usage: tsg <create|get|update|list|search|execute|score|ts> [args]");
+    fatal("Usage: tsg <create|get|update|list|search|execute|score|diagnose|analyze|suggest|run> [args]");
   }
 
   switch (action) {
@@ -34,10 +34,18 @@ export async function handleTsg(args: string[]): Promise<void> {
       return handleExecute(args.slice(1));
     case "score":
       return handleScore(args.slice(1));
+    case "diagnose":
+      return handleDiagnose(args.slice(1));
+    case "analyze":
+      return handleAnalyze(args.slice(1));
+    case "suggest":
+      return handleSuggest(args.slice(1));
+    case "run":
+      return handleRun(args.slice(1));
     case "ts":
       return handleTroubleshoot(args.slice(1));
     default:
-      fatal(`Unknown tsg action: ${action}. Use create|get|update|list|search|execute|score|ts`);
+      fatal(`Unknown tsg action: ${action}. Use create|get|update|list|search|execute|score|diagnose|analyze|suggest|run`);
   }
 }
 

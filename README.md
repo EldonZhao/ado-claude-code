@@ -98,7 +98,7 @@ export ADO_PAT="your-personal-access-token"
 
 ## What's Included
 
-### Slash Commands (9)
+### Slash Commands (8)
 
 | Command | Description |
 |---------|-------------|
@@ -108,8 +108,7 @@ export ADO_PAT="your-personal-access-token"
 | `/ado-claude-code:workitem-query` | Run WIQL queries or list local items |
 | `/ado-claude-code:workitem-create` | Create a new work item in Azure DevOps |
 | `/ado-claude-code:clear` | Clear all synced work items from local storage |
-| `/ado-claude-code:tsg-ts` | Diagnose issues, analyze output, suggest resolutions |
-| `/ado-claude-code:tsg-create` | Create and manage troubleshooting guides |
+| `/ado-claude-code:tsg` | Create, manage, and troubleshoot with TSGs |
 | `/ado-claude-code:setup` | Initialize, validate, login/logout, or show configuration |
 
 ### Agents (2)
@@ -193,23 +192,23 @@ Fetches the work item and returns structured guidance including files to analyze
 ### TSG
 
 ```
-/ado-claude-code:tsg-create create --title="Pod OOM" --category=deployment
-/ado-claude-code:tsg-create create --title="Pod OOM" --category=deployment --template
-/ado-claude-code:tsg-create create --file=./existing-tsg.md
-/ado-claude-code:tsg-create list [--category=deployment]
-/ado-claude-code:tsg-create get <tsg-id>
-/ado-claude-code:tsg-create update <tsg-id> --title="..." --tags='[...]'
-/ado-claude-code:tsg-create search --query="pod restarting" --symptoms='["OOMKilled"]'
-/ado-claude-code:tsg-create score <tsg-id>   # Evaluate TSG completeness (0–125)
+/ado-claude-code:tsg create --title="Pod OOM" --category=deployment
+/ado-claude-code:tsg create --title="Pod OOM" --category=deployment --template
+/ado-claude-code:tsg create --file=./existing-tsg.md
+/ado-claude-code:tsg list [--category=deployment]
+/ado-claude-code:tsg get <tsg-id>
+/ado-claude-code:tsg update <tsg-id> --title="..." --tags='[...]'
+/ado-claude-code:tsg search --query="pod restarting" --symptoms='["OOMKilled"]'
+/ado-claude-code:tsg score <tsg-id>   # Evaluate TSG completeness (0–125)
 ```
 
 **Troubleshooting workflow:**
 
 ```
-/ado-claude-code:tsg-ts diagnose --symptoms='["pod restarting","OOMKilled"]'
-/ado-claude-code:tsg-ts analyze --output="<diagnostic output>" --tsgId=<id>
-/ado-claude-code:tsg-ts suggest --tsgId=<id> --rootCause=oom
-/ado-claude-code:tsg-ts run --symptoms='["pod restarting"]' --category=deployment
+/ado-claude-code:tsg diagnose --symptoms='["pod restarting","OOMKilled"]'
+/ado-claude-code:tsg analyze --output="<diagnostic output>" --tsgId=<id>
+/ado-claude-code:tsg suggest --tsgId=<id> --rootCause=oom
+/ado-claude-code:tsg run --symptoms='["pod restarting"]' --category=deployment
 ```
 
 The `run` action chains diagnose → diagnostics → analyze → suggest in a single command.
@@ -231,9 +230,9 @@ src/
   cli/
     work-items.ts       Work item handlers
     sync.ts             Sync handlers
-    tsg.ts              TSG handlers (includes ts subcommand for troubleshooting)
+    tsg.ts              TSG handlers (create, manage, and troubleshoot)
     setup.ts            Setup handlers
-    troubleshoot.ts     Troubleshooting handlers (accessed via tsg ts)
+    troubleshoot.ts     Troubleshooting handlers (diagnose, analyze, suggest, run)
     helpers.ts          Shared CLI utilities
   services/
     ado/                ADO client, auth
@@ -245,7 +244,7 @@ src/
   utils/                Logger, error classes
 
 .claude-plugin/         Plugin manifest + marketplace catalog
-commands/               Slash commands (9)
+commands/               Slash commands (8)
 agents/                 Specialist subagents (2)
 rules/                  Always-active conventions
 

@@ -29,7 +29,7 @@ node dist/cli.js <domain> <action> [--flags]
 - `work-items` — get, list, create, update, query, plan (code), workitem-plan (breakdown)
 - `sync` — pull, push, full
 - `clear` — [--confirm]
-- `tsg` — create, get, update, list, search, execute, score, ts (troubleshoot)
+- `tsg` — create, get, update, list, search, execute, score, diagnose, analyze, suggest, run
 
 ## Architecture
 - `src/cli.ts` — CLI entry point (arg parsing + routing)
@@ -37,9 +37,9 @@ node dist/cli.js <domain> <action> [--flags]
   - `work-items.ts` — Work item CRUD, query, plan (code), workitem-plan (breakdown)
   - `sync.ts` — Bidirectional sync
   - `clear.ts` — Clear synced work items
-  - `tsg.ts` — TSG CRUD, search, execute, score, ts (troubleshoot)
+  - `tsg.ts` — TSG CRUD, search, execute, score, diagnose, analyze, suggest, run
   - `setup.ts` — Config init/validate/show
-  - `troubleshoot.ts` — Diagnose, analyze, suggest, run (accessed via `tsg ts`)
+  - `troubleshoot.ts` — Troubleshooting logic (diagnose, analyze, suggest, run)
   - `helpers.ts` — Shared CLI helpers (ADO client, formatters, output)
 - `src/services/` — Business logic
   - `ado/` — ADO client, auth, types
@@ -55,7 +55,7 @@ node dist/cli.js <domain> <action> [--flags]
 ## Plugin Structure
 - `.claude-plugin/plugin.json` — Plugin manifest
 - `dist/cli.js` — Self-contained CLI bundle (committed, no build step needed for marketplace installs)
-- `commands/*.md` — Slash commands (9)
+- `commands/*.md` — Slash commands (8)
 - `agents/*.md` — Specialist subagents (2)
 - `rules/*.md` — Always-active conventions
 
