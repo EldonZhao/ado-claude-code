@@ -17,6 +17,8 @@ arguments:
 
 Create and manage structured Troubleshooting Guides.
 
+**IMPORTANT:** The CLI is at `dist/cli.js` within the plugin's install directory. To find it, read `~/.claude/plugins/installed_plugins.json`, look up `ado-claude-code@ado-claude-code`, and use its `installPath` + `/dist/cli.js`.
+
 **IMPORTANT:** Always pass `--project-dir=<user's project root>` so TSGs are stored in the project's `.claude/` directory, not the plugin's.
 
 ## Create a TSG

@@ -447,15 +447,23 @@ async function handleWorkitemPlan(args: string[]): Promise<void> {
 
   // Create in ADO
   const created: Array<{ id: number; type: string; title: string; parentId: number }> = [];
+  const failed: Array<{ title: string; type: string; error: string }> = [];
   for (const item of proposal.items) {
-    const adoItem = await client.createWorkItem({
-      type: item.type,
-      title: item.title,
-      description: item.description,
-      priority: item.priority,
-      storyPoints: item.storyPoints,
-      parentId: parent.id,
-    });
+    let adoItem;
+    try {
+      adoItem = await client.createWorkItem({
+        type: item.type,
+        title: item.title,
+        description: item.description,
+        priority: item.priority,
+        storyPoints: item.storyPoints,
+        parentId: parent.id,
+      });
+    } catch (err) {
+      process.stderr.write(`Warning: Failed to create "${item.title}": ${err}\n`);
+      failed.push({ title: item.title, type: item.type, error: String(err) });
+      continue;
+    }
     const local = mapAdoToLocal(adoItem);
     await saveAndTrack(storage, local);
     created.push({ id: local.id, type: local.type, title: local.title, parentId: parent.id });
@@ -476,6 +484,7 @@ async function handleWorkitemPlan(args: string[]): Promise<void> {
           created.push({ id: childLocal.id, type: childLocal.type, title: childLocal.title, parentId: adoItem.id });
         } catch (err) {
           process.stderr.write(`Warning: Failed to create child "${child.title}": ${err}\n`);
+          failed.push({ title: child.title, type: child.type, error: String(err) });
         }
       }
     }
@@ -520,6 +529,7 @@ async function handleWorkitemPlan(args: string[]): Promise<void> {
   }
 
   const result: Record<string, unknown> = { created: created.length, items: created };
+  if (failed.length > 0) result.failed = failed;
   if (stateChanged) result.stateChange = { from: previousState, to: "In Progress" };
   if (commentAdded) result.commentAdded = commentAdded;
   if (createCommentAdded) result.createCommentAdded = createCommentAdded;

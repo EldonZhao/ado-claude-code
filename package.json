@@ -1,8 +1,7 @@
 {
   "name": "ado-claude-code",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Claude Code plugin for Azure DevOps integration",
-  "type": "module",
   "main": "dist/cli.js",
   "bin": {
     "ado-claude-code": "dist/cli.js"

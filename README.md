@@ -25,12 +25,7 @@ Claude Code plugin for [Azure DevOps](https://dev.azure.com) integration. Sync w
 /plugin install ado-claude-code@ado-claude-code
 ```
 
-After installation, build the CLI:
-
-```bash
-cd ~/.claude/plugins/cache/ado-claude-code   # or wherever the plugin was installed
-npm install && npm run build
-```
+The CLI is pre-built and bundled with all dependencies — no `npm install` or build step needed after installation.
 
 ### Option B: Local Plugin (Development / Testing)
 
@@ -61,24 +56,32 @@ cp -r rules/ /path/to/your-project/.claude/rules/
 
 ## Setup
 
+After installation, run the interactive setup in the Claude terminal:
+
+```
+/ado-claude-code:setup
+```
+
+This walks you through configuring your organization URL, project name, and authentication. Alternatively, run each step manually:
+
 ### 1. Initialize configuration
 
-```bash
-node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --project="YourProject"
+```
+/ado-claude-code:setup init --organization="https://dev.azure.com/your-org" --project="YourProject"
 ```
 
 ### 2. Login
 
-```bash
-node dist/cli.js setup login
+```
+/ado-claude-code:setup login
 ```
 
 This starts a device-code flow — you'll see a URL and code in the terminal. Open the URL in your browser, enter the code, and sign in with your Azure AD account. The token is cached locally so subsequent commands authenticate automatically.
 
 ### 3. Validate connection
 
-```bash
-node dist/cli.js setup validate
+```
+/ado-claude-code:setup validate
 ```
 
 ### Alternative: PAT authentication
@@ -87,7 +90,10 @@ If you prefer a Personal Access Token instead of browser login:
 
 ```bash
 export ADO_PAT="your-personal-access-token"
-node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --project="YourProject" --authType=pat
+```
+
+```
+/ado-claude-code:setup init --organization="https://dev.azure.com/your-org" --project="YourProject" --authType=pat
 ```
 
 ## What's Included
@@ -121,60 +127,92 @@ node dist/cli.js setup init --organization="https://dev.azure.com/your-org" --pr
 
 ## CLI Reference
 
-All commands output JSON to stdout. The CLI is invoked by plugin commands via Bash.
-
-```
-node dist/cli.js <domain> <action> [--flags]
-```
+All commands are invoked as slash commands in the Claude terminal. With marketplace install, commands are prefixed with `ado-claude-code:`.
 
 ### Setup
-```bash
-node dist/cli.js setup init --organization=<url> --project=<name> [--authType=azure-ad|pat]
-node dist/cli.js setup login
-node dist/cli.js setup logout
-node dist/cli.js setup validate
-node dist/cli.js setup show
+
+```
+/ado-claude-code:setup                      # Interactive setup — walks you through init, login, and validate
+/ado-claude-code:setup init                  # Initialize config with org URL and project name
+/ado-claude-code:setup login                 # Authenticate via Azure AD browser flow
+/ado-claude-code:setup logout                # Clear cached credentials
+/ado-claude-code:setup validate              # Test the connection to Azure DevOps
+/ado-claude-code:setup show                  # Display current configuration
 ```
 
-### Work Items
-```bash
-node dist/cli.js work-items get <id> [--expand=all|relations|fields] [--no-save]
-node dist/cli.js work-items list [--type=...] [--state=...] [--assignedTo=...]
-node dist/cli.js work-items create --type=Task --title="Fix bug" [--priority=1] [--assignedTo=...] [--parentId=...]
-node dist/cli.js work-items update <id> [--state=Active] [--priority=2] [--comment="..."]
-node dist/cli.js work-items query "SELECT [System.Id] FROM WorkItems WHERE ..." [--save]
-node dist/cli.js work-items plan <id> [--no-update]
-node dist/cli.js work-items workitem-plan <id> [--items='[...]'] [--create]
-```
+Configuration is stored in `.claude/.ado-config.yaml`. For PAT auth, set `ADO_PAT` env var and pass `--authType=pat` to init.
 
 ### Sync
-```bash
-node dist/cli.js sync pull [--ids=1,2,3] [--query="SELECT ..."] [--mine] [--all]
-node dist/cli.js sync push [--ids=1,2,3]
-node dist/cli.js sync full [--query="SELECT ..."] [--mine] [--all]
+
+```
+/ado-claude-code:sync pull                   # Pull active items assigned to you (default)
+/ado-claude-code:sync pull --ids=1234,5678   # Pull specific work items
+/ado-claude-code:sync pull --all             # Pull all your items including Closed/Done
+/ado-claude-code:sync pull --query="SELECT [System.Id] FROM WorkItems WHERE ..."
+/ado-claude-code:sync push                   # Push local changes to Azure DevOps
+/ado-claude-code:sync push --ids=1234        # Push specific items
+/ado-claude-code:sync full                   # Bidirectional sync (push then pull)
+/ado-claude-code:sync full --mine            # Full sync for your active items
 ```
 
-### Clear
-```bash
-node dist/cli.js clear [--confirm]
+Synced items are stored as YAML in `.claude/ado/work-items/` organized by type. Use `/ado-claude-code:clear --confirm` to remove all synced items and reset sync state.
+
+### Work Items
+
 ```
+/ado-claude-code:query list                  # List locally synced items
+/ado-claude-code:query list --type="User Story" --state=Active
+/ado-claude-code:query query "SELECT [System.Id] FROM WorkItems WHERE ..."
+/ado-claude-code:workitem-create --type=Task --title="Fix the bug" --priority=2
+/ado-claude-code:workitem-create --type="User Story" --title="As a user, I want..." --parentId=1234
+/ado-claude-code:workitem-plan <id>          # Get breakdown guidance for a work item
+/ado-claude-code:workitem-plan <id> --items='[...]' --create   # Create child items in ADO
+/ado-claude-code:workitem-plan <id> --complete                 # Mark work item as Done/Closed
+```
+
+**Hierarchy:** Epic → Feature → User Story → Task → Task (sub-tasks). Bug → Task.
+
+Custom required fields can be configured as defaults in `.claude/.ado-config.yaml`:
+
+```yaml
+defaults:
+  Task:
+    customFields:
+      Custom.StatusTweet: "Created by Claude"
+```
+
+### Code Plan
+
+```
+/ado-claude-code:code-plan <id>              # Generate implementation plan from a work item
+/ado-claude-code:code-plan <id> --no-update  # Generate plan without updating work item state
+```
+
+Fetches the work item and returns structured guidance including files to analyze, architectural approach, step-by-step changes, testing suggestions, and edge cases. Automatically transitions the work item to "In Progress" and posts the plan as a comment.
 
 ### TSG
-```bash
-node dist/cli.js tsg create --title="..." --category=deployment
-node dist/cli.js tsg get <id>
-node dist/cli.js tsg update <id> [--title=...] [--tags='[...]']
-node dist/cli.js tsg list [--category=...]
-node dist/cli.js tsg search --query="..." [--symptoms='[...]']
-node dist/cli.js tsg execute <id> [--stepId=...] [--rootCause=...] [--parameters='{...}']
+
+```
+/ado-claude-code:tsg-create create --title="Pod OOM" --category=deployment
+/ado-claude-code:tsg-create create --title="Pod OOM" --category=deployment --template
+/ado-claude-code:tsg-create create --file=./existing-tsg.md
+/ado-claude-code:tsg-create list [--category=deployment]
+/ado-claude-code:tsg-create get <tsg-id>
+/ado-claude-code:tsg-create update <tsg-id> --title="..." --tags='[...]'
+/ado-claude-code:tsg-create search --query="pod restarting" --symptoms='["OOMKilled"]'
+/ado-claude-code:tsg-create score <tsg-id>   # Evaluate TSG completeness (0–125)
 ```
 
-### Troubleshooting (via `tsg ts`)
-```bash
-node dist/cli.js tsg ts diagnose --symptoms='["symptom1","symptom2"]'
-node dist/cli.js tsg ts analyze --output="<diagnostic output>" [--tsgId=...]
-node dist/cli.js tsg ts suggest --tsgId=<id> --rootCause=<cause>
+**Troubleshooting workflow:**
+
 ```
+/ado-claude-code:tsg-ts diagnose --symptoms='["pod restarting","OOMKilled"]'
+/ado-claude-code:tsg-ts analyze --output="<diagnostic output>" --tsgId=<id>
+/ado-claude-code:tsg-ts suggest --tsgId=<id> --rootCause=oom
+/ado-claude-code:tsg-ts run --symptoms='["pod restarting"]' --category=deployment
+```
+
+The `run` action chains diagnose → diagnostics → analyze → suggest in a single command.
 
 ## Development
 

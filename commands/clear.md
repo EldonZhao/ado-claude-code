@@ -11,6 +11,8 @@ arguments:
 
 Remove all locally synced work items and reset sync state.
 
+**IMPORTANT:** The CLI is at `dist/cli.js` within the plugin's install directory. To find it, read `~/.claude/plugins/installed_plugins.json`, look up `ado-claude-code@ado-claude-code`, and use its `installPath` + `/dist/cli.js`.
+
 **IMPORTANT:** Always pass `--project-dir=<user's project root>` so the correct project's `.claude/` directory is cleared, not the plugin's.
 
 ## Usage

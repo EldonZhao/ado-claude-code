@@ -29,6 +29,8 @@ arguments:
 
 Create a new work item in Azure DevOps and automatically save it to local YAML storage.
 
+**IMPORTANT:** The CLI is at `dist/cli.js` within the plugin's install directory. To find it, read `~/.claude/plugins/installed_plugins.json`, look up `ado-claude-code@ado-claude-code`, and use its `installPath` + `/dist/cli.js`.
+
 **IMPORTANT:** Always pass `--project-dir=<user's project root>` so the item is saved in the project's `.claude/` directory, not the plugin's.
 
 ## Usage

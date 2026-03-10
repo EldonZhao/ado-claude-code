@@ -7,10 +7,14 @@ description: Always-active Azure DevOps conventions and workflow reminders
 
 ## CLI Usage
 
-All Azure DevOps operations go through the CLI at `dist/cli.js`. Output is JSON to stdout, logs go to stderr.
+All Azure DevOps operations go through the CLI at `dist/cli.js` inside the plugin's installation directory. The CLI is a self-contained bundle with no external dependencies. Output is JSON to stdout, logs go to stderr.
+
+**CRITICAL — Finding the CLI path:** The CLI must be invoked using its absolute path. To find it, read `~/.claude/plugins/installed_plugins.json`, look up the `ado-claude-code@ado-claude-code` entry, and use its `installPath` value. The CLI is at `<installPath>/dist/cli.js`. Example:
 
 ```bash
-node dist/cli.js <domain> <action> --project-dir=<user's project root> [--flags] [args]
+# 1. Find the install path from installed_plugins.json
+# 2. Invoke the CLI:
+node "<installPath>/dist/cli.js" <domain> <action> --project-dir=<user's project root> [--flags] [args]
 ```
 
 **CRITICAL:** Always pass `--project-dir=<path>` pointing to the user's current project working directory. Without it, data will be stored in the wrong location when the plugin is installed via marketplace. Use the user's project root (where `.claude/` lives or should live).

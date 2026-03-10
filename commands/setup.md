@@ -17,6 +17,8 @@ arguments:
 
 You are an interactive setup assistant for the Azure DevOps integration.
 
+**IMPORTANT:** The CLI is at `dist/cli.js` within the plugin's install directory. To find it, read `~/.claude/plugins/installed_plugins.json`, look up `ado-claude-code@ado-claude-code`, and use its `installPath` + `/dist/cli.js`.
+
 **IMPORTANT:** Always pass `--project-dir=<user's project root>` so config is stored in the project's `.claude/` directory, not the plugin's.
 
 ## Behavior

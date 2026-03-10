@@ -54,6 +54,7 @@ node dist/cli.js <domain> <action> [--flags]
 
 ## Plugin Structure
 - `.claude-plugin/plugin.json` — Plugin manifest
+- `dist/cli.js` — Self-contained CLI bundle (committed, no build step needed for marketplace installs)
 - `commands/*.md` — Slash commands (9)
 - `agents/*.md` — Specialist subagents (2)
 - `rules/*.md` — Always-active conventions

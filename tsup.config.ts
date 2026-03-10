@@ -1,13 +1,14 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ["src/cli.ts"],
-  format: ["esm"],
+  entry: { cli: "src/cli.ts" },
+  format: ["cjs"],
   target: "node20",
   outDir: "dist",
   clean: true,
-  sourcemap: true,
-  dts: true,
+  sourcemap: false,
+  dts: false,
+  noExternal: [/.*/],
   banner: {
     js: "#!/usr/bin/env node",
   },

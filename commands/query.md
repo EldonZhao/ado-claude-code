@@ -23,6 +23,8 @@ arguments:
 
 Query work items from Azure DevOps or list locally synced items.
 
+**IMPORTANT:** The CLI is at `dist/cli.js` within the plugin's install directory. To find it, read `~/.claude/plugins/installed_plugins.json`, look up `ado-claude-code@ado-claude-code`, and use its `installPath` + `/dist/cli.js`.
+
 **IMPORTANT:** Always pass `--project-dir=<user's project root>` so data is read from the project's `.claude/` directory, not the plugin's.
 
 ## Query from ADO (WIQL)
