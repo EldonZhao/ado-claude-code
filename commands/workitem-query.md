@@ -1,5 +1,5 @@
 ---
-name: ado-claude-code:query
+name: ado-claude-code:workitem-query
 description: Query Azure DevOps work items via WIQL or list local items
 arguments:
   - name: action

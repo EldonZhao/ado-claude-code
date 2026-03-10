@@ -105,7 +105,7 @@ export ADO_PAT="your-personal-access-token"
 | `/ado-claude-code:sync` | Pull/push/full sync work items with Azure DevOps |
 | `/ado-claude-code:code-plan` | Generate a code implementation plan from a work item (auto-updates state and adds comment) |
 | `/ado-claude-code:workitem-plan` | AI-assisted work item hierarchy breakdown |
-| `/ado-claude-code:query` | Run WIQL queries or list local items |
+| `/ado-claude-code:workitem-query` | Run WIQL queries or list local items |
 | `/ado-claude-code:workitem-create` | Create a new work item in Azure DevOps |
 | `/ado-claude-code:clear` | Clear all synced work items from local storage |
 | `/ado-claude-code:tsg-ts` | Diagnose issues, analyze output, suggest resolutions |
@@ -160,9 +160,9 @@ Synced items are stored as YAML in `.claude/ado/work-items/` organized by type. 
 ### Work Items
 
 ```
-/ado-claude-code:query list                  # List locally synced items
-/ado-claude-code:query list --type="User Story" --state=Active
-/ado-claude-code:query query "SELECT [System.Id] FROM WorkItems WHERE ..."
+/ado-claude-code:workitem-query list                  # List locally synced items
+/ado-claude-code:workitem-query list --type="User Story" --state=Active
+/ado-claude-code:workitem-query query "SELECT [System.Id] FROM WorkItems WHERE ..."
 /ado-claude-code:workitem-create --type=Task --title="Fix the bug" --priority=2
 /ado-claude-code:workitem-create --type="User Story" --title="As a user, I want..." --parentId=1234
 /ado-claude-code:workitem-plan <id>          # Get breakdown guidance for a work item
