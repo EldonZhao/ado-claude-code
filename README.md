@@ -162,12 +162,15 @@ Synced items are stored as YAML in `.claude/ado/work-items/` organized by type. 
 /ado-claude-code:workitem-query list                  # List locally synced items
 /ado-claude-code:workitem-query list --type="User Story" --state=Active
 /ado-claude-code:workitem-query query "SELECT [System.Id] FROM WorkItems WHERE ..."
-/ado-claude-code:workitem-create --type=Task --title="Fix the bug" --priority=2
+/ado-claude-code:workitem-create Bug "login crashes on empty password"      # Summary → Claude refines title & description
+/ado-claude-code:workitem-create --type=Task --title="Fix the bug"          # Explicit title → pass-through
 /ado-claude-code:workitem-create --type="User Story" --title="As a user, I want..." --parentId=1234
 /ado-claude-code:workitem-plan <id>          # Get breakdown guidance for a work item
 /ado-claude-code:workitem-plan <id> --items='[...]' --create   # Create child items in ADO
 /ado-claude-code:workitem-plan <id> --complete                 # Mark work item as Done/Closed
 ```
+
+When you provide a **summary** instead of an explicit `--title`, Claude refines it into a well-structured title and HTML description using per-type formatting rules (Bug, User Story, Task, Feature, Epic) and presents the result for confirmation before creating.
 
 **Hierarchy:** Epic → Feature → User Story → Task → Task (sub-tasks). Bug → Task.
 
