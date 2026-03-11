@@ -31,8 +31,8 @@ export async function getSyncStateManager(
   return syncStateInstance;
 }
 
-export function mapAdoToLocal(item: AdoWorkItem): LocalWorkItemOutput {
-  return adoToLocal(item);
+export function mapAdoToLocal(item: AdoWorkItem, latestComment?: string): LocalWorkItemOutput {
+  return adoToLocal(item, latestComment);
 }
 
 export function formatWorkItemSummary(item: LocalWorkItemOutput): string {

@@ -2,12 +2,6 @@ import { z } from "zod/v4";
 
 export const WorkItemTypeSchema = z.string().min(1);
 
-export const WorkItemCommentSchema = z.object({
-  author: z.string(),
-  date: z.string(),
-  text: z.string(),
-});
-
 export const LocalWorkItemSchema = z.object({
   id: z.number().int().positive(),
   rev: z.number().int().nonnegative(),
@@ -24,8 +18,8 @@ export const LocalWorkItemSchema = z.object({
   parent: z.number().int().optional(),
   children: z.array(z.number().int()).optional(),
   description: z.string().optional(),
+  latestComment: z.string().optional(),
   customFields: z.record(z.string(), z.unknown()).optional(),
-  comments: z.array(WorkItemCommentSchema).optional(),
 });
 
 export type LocalWorkItemInput = z.input<typeof LocalWorkItemSchema>;

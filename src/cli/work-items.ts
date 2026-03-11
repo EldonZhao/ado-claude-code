@@ -307,7 +307,8 @@ async function handlePlan(args: string[]): Promise<void> {
           // Local file was modified — push changes to ADO first
           const remoteItem = await client.getWorkItem(id, "relations");
           if (remoteItem.rev <= existingState.adoRev) {
-            const baseline = adoToLocal(remoteItem);
+            const baselineComment = await client.getLatestComment(id);
+            const baseline = adoToLocal(remoteItem, baselineComment);
             const patchOps = localToAdoPatch(localItem, baseline);
             if (patchOps.length > 0) {
               await client.updateWorkItem({
@@ -322,6 +323,10 @@ async function handlePlan(args: string[]): Promise<void> {
                 storyPoints: localItem.storyPoints !== baseline.storyPoints ? localItem.storyPoints : undefined,
               });
             }
+            // Push locally edited comment as new ADO comment
+            if (localItem.latestComment && localItem.latestComment !== baseline.latestComment) {
+              await client.addComment(id, localItem.latestComment);
+            }
           }
         }
       }
@@ -332,7 +337,8 @@ async function handlePlan(args: string[]): Promise<void> {
 
   // Fetch fresh from ADO (picks up our pushed changes + any other remote changes)
   const adoItem = await client.getWorkItem(id, "relations");
-  let item = mapAdoToLocal(adoItem);
+  const latestComment = await client.getLatestComment(id);
+  let item = mapAdoToLocal(adoItem, latestComment);
   await saveAndTrack(storage, item);
 
   const guidance = getCodePlanGuidance(item);
@@ -348,7 +354,7 @@ async function handlePlan(args: string[]): Promise<void> {
       try {
         previousState = item.state;
         const updatedAdo = await client.updateWorkItem({ id, state: "In Progress" });
-        item = mapAdoToLocal(updatedAdo);
+        item = mapAdoToLocal(updatedAdo, latestComment);
         await saveAndTrack(storage, item);
         stateChanged = true;
       } catch (err) {

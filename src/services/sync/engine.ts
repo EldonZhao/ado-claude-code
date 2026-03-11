@@ -98,7 +98,8 @@ export class SyncEngine {
 
     for (const adoItem of adoItems) {
       try {
-        const localItem = adoToLocal(adoItem);
+        const latestComment = await this.client.getLatestComment(adoItem.id);
+        const localItem = adoToLocal(adoItem, latestComment);
         const yamlContent = serializeForHash(localItem);
         const hash = SyncStateManager.computeHash(yamlContent);
 
@@ -199,7 +200,8 @@ export class SyncEngine {
         }
 
         // Compute diff against what we last synced (use remote as baseline)
-        const baseline = adoToLocal(remoteItem);
+        const baselineComment = await this.client.getLatestComment(id);
+        const baseline = adoToLocal(remoteItem, baselineComment);
         const patchOps = localToAdoPatch(localItem, baseline);
 
         if (patchOps.length === 0) {
@@ -244,8 +246,18 @@ export class SyncEngine {
               : undefined,
         });
 
+        // Push locally edited comment as new ADO comment
+        if (localItem.latestComment && localItem.latestComment !== baseline.latestComment) {
+          try {
+            await this.client.addComment(id, localItem.latestComment);
+          } catch (err) {
+            result.errors.push(`Failed to push comment for #${id}: ${err}`);
+          }
+        }
+
         // Re-save with updated rev
-        const updatedLocal = adoToLocal(updated);
+        const latestComment = await this.client.getLatestComment(id);
+        const updatedLocal = adoToLocal(updated, latestComment);
         const filePath = await this.storage.save(updatedLocal);
         const newHash = SyncStateManager.computeHash(
           serializeForHash(updatedLocal),

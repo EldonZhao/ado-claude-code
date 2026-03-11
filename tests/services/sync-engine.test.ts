@@ -73,6 +73,8 @@ function makeMockClient() {
     getWorkItem: vi.fn(),
     queryWorkItems: vi.fn(),
     updateWorkItem: vi.fn(),
+    addComment: vi.fn().mockResolvedValue({ id: 1, text: "comment" }),
+    getLatestComment: vi.fn().mockResolvedValue(undefined),
   } as unknown as AdoClient;
 }
 

@@ -158,6 +158,18 @@ describe("adoToLocal", () => {
     const local = adoToLocal(ado);
     expect(local.children).toBeUndefined();
   });
+
+  it("passes through latestComment when provided", () => {
+    const ado = makeAdoItem();
+    const local = adoToLocal(ado, "This is the latest comment");
+    expect(local.latestComment).toBe("This is the latest comment");
+  });
+
+  it("leaves latestComment undefined when not provided", () => {
+    const ado = makeAdoItem();
+    const local = adoToLocal(ado);
+    expect(local.latestComment).toBeUndefined();
+  });
 });
 
 describe("localToAdoPatch", () => {
@@ -209,6 +221,18 @@ describe("serializeForHash", () => {
   it("excludes syncedAt from serialization", () => {
     const item1 = makeLocalItem({ syncedAt: "2026-01-01T00:00:00.000Z" });
     const item2 = makeLocalItem({ syncedAt: "2026-12-31T00:00:00.000Z" });
+    expect(serializeForHash(item1)).toBe(serializeForHash(item2));
+  });
+
+  it("excludes latestComment from serialization", () => {
+    const item1 = makeLocalItem({ latestComment: "Comment A" });
+    const item2 = makeLocalItem({ latestComment: "Comment B" });
+    expect(serializeForHash(item1)).toBe(serializeForHash(item2));
+  });
+
+  it("excludes latestComment vs undefined from serialization", () => {
+    const item1 = makeLocalItem({ latestComment: "Some comment" });
+    const item2 = makeLocalItem({ latestComment: undefined });
     expect(serializeForHash(item1)).toBe(serializeForHash(item2));
   });
 

@@ -15,7 +15,7 @@ export function toWebUrl(apiUrl: string): string {
 /**
  * Map an ADO API work item to the local YAML-compatible format.
  */
-export function adoToLocal(item: AdoWorkItem): LocalWorkItemOutput {
+export function adoToLocal(item: AdoWorkItem, latestComment?: string): LocalWorkItemOutput {
   const f = item.fields;
 
   const assignedTo = resolveAssignedTo(f["System.AssignedTo"]);
@@ -47,6 +47,7 @@ export function adoToLocal(item: AdoWorkItem): LocalWorkItemOutput {
     parent: (f["System.Parent"] as number) ?? undefined,
     children: children.length > 0 ? children : undefined,
     description: (f["System.Description"] as string) ?? "",
+    latestComment,
   };
 }
 
@@ -116,7 +117,7 @@ export function localToAdoPatch(
  * Excludes syncedAt since that changes on every sync but doesn't represent a content change.
  */
 export function serializeForHash(item: LocalWorkItemOutput): string {
-  const { syncedAt, ...rest } = item;
+  const { syncedAt, latestComment, ...rest } = item;
   return stringifyYaml(rest, { sortMapEntries: true });
 }
 

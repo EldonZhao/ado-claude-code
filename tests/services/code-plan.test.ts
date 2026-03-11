@@ -82,6 +82,19 @@ describe("getCodePlanGuidance", () => {
     expect(guidance).toContain("**State:** New");
   });
 
+  it("includes latestComment when available", () => {
+    const item = makeItem({ latestComment: "Please also handle the edge case for empty input" });
+    const guidance = getCodePlanGuidance(item);
+    expect(guidance).toContain("## Latest Comment");
+    expect(guidance).toContain("Please also handle the edge case for empty input");
+  });
+
+  it("excludes Latest Comment section when latestComment is undefined", () => {
+    const item = makeItem({ latestComment: undefined });
+    const guidance = getCodePlanGuidance(item);
+    expect(guidance).not.toContain("## Latest Comment");
+  });
+
   it("includes implementation plan structure requirements", () => {
     const item = makeItem();
     const guidance = getCodePlanGuidance(item);

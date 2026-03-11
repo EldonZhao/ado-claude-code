@@ -295,6 +295,15 @@ export class AdoClient {
     return result;
   }
 
+  async getLatestComment(workItemId: number): Promise<string | undefined> {
+    const api = await this.getWitApi();
+    const result = await api.getComments(this.project, workItemId, 1, undefined, false, undefined, 2 /* Desc */);
+    const text = result?.comments?.[0]?.text;
+    if (!text) return undefined;
+    // Strip HTML tags for clean YAML editing
+    return text.replace(/<[^>]+>/g, "").trim() || undefined;
+  }
+
   async addComment(workItemId: number, text: string): Promise<{ id: number; text: string }> {
     const api = await this.getWitApi();
     const result = await api.addComment(

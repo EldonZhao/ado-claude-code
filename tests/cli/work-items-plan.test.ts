@@ -7,6 +7,7 @@ const mockGetWorkItem = vi.fn();
 const mockUpdateWorkItem = vi.fn();
 const mockAddComment = vi.fn();
 const mockGetTerminalState = vi.fn();
+const mockGetLatestComment = vi.fn();
 const mockSave = vi.fn();
 const mockLoadById = vi.fn();
 const mockOutput = vi.fn();
@@ -23,13 +24,18 @@ vi.mock("../../src/cli/helpers.js", async (importOriginal) => {
       updateWorkItem: (...args: unknown[]) => mockUpdateWorkItem(...args),
       addComment: (...args: unknown[]) => mockAddComment(...args),
       getTerminalState: (...args: unknown[]) => mockGetTerminalState(...args),
+      getLatestComment: (...args: unknown[]) => mockGetLatestComment(...args),
     }),
     getSyncStateManager: vi.fn().mockResolvedValue({
       getItemState: (...args: unknown[]) => mockGetItemState(...args),
       setItemState: (...args: unknown[]) => mockSetItemState(...args),
       save: (...args: unknown[]) => mockStateSave(...args),
     }),
-    mapAdoToLocal: vi.fn((ado: any) => ado as LocalWorkItemOutput),
+    mapAdoToLocal: vi.fn((ado: any, latestComment?: string) => {
+      const result = { ...ado } as LocalWorkItemOutput;
+      if (latestComment !== undefined) result.latestComment = latestComment;
+      return result;
+    }),
     output: (...args: unknown[]) => mockOutput(...args),
     fatal: (msg: string) => mockFatal(msg),
     parseFlags: vi.fn((args: string[]) => {
@@ -62,7 +68,11 @@ vi.mock("../../src/services/planning/code-plan.js", () => ({
 }));
 
 vi.mock("../../src/services/sync/mapper.js", () => ({
-  adoToLocal: vi.fn((ado: any) => ado as LocalWorkItemOutput),
+  adoToLocal: vi.fn((ado: any, latestComment?: string) => {
+    const result = { ...ado } as LocalWorkItemOutput;
+    if (latestComment !== undefined) result.latestComment = latestComment;
+    return result;
+  }),
   localToAdoPatch: vi.fn(() => [{ op: "replace", path: "/fields/System.Title", value: "Updated" }]),
   serializeForHash: vi.fn(() => "mock-serialized"),
 }));
@@ -107,6 +117,7 @@ function makeAdoItem(overrides?: Partial<LocalWorkItemOutput>): LocalWorkItemOut
 describe("handlePlan (work-items plan) state and comment updates", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetLatestComment.mockResolvedValue(undefined);
   });
 
   it("transitions from New to In Progress and adds comment", async () => {
@@ -272,6 +283,7 @@ describe("handlePlan bidirectional sync (local → ADO push)", () => {
     // Default: no local sync state (skip push)
     mockGetItemState.mockResolvedValue(null);
     mockLoadById.mockResolvedValue(null);
+    mockGetLatestComment.mockResolvedValue(undefined);
   });
 
   it("pushes local modifications to ADO before fetching", async () => {
@@ -405,6 +417,7 @@ describe("handleUpdate --complete --comment", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetItemState.mockResolvedValue(null);
+    mockGetLatestComment.mockResolvedValue(undefined);
   });
 
   it("merges user comment into completion comment", async () => {
@@ -438,5 +451,95 @@ describe("handleUpdate --complete --comment", () => {
     const commentArg = mockAddComment.mock.calls[0][1];
     expect(commentArg).toContain("Work item marked as completed by Claude");
     expect(commentArg).not.toContain("<hr>");
+  });
+});
+
+describe("handlePlan latestComment integration", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetItemState.mockResolvedValue(null);
+    mockLoadById.mockResolvedValue(null);
+    mockGetLatestComment.mockResolvedValue(undefined);
+  });
+
+  it("fetches latestComment and includes it in the mapped item", async () => {
+    const item = makeAdoItem({ state: "In Progress" });
+    mockGetWorkItem.mockResolvedValue(item);
+    mockGetLatestComment.mockResolvedValue("Check the auth module");
+    mockAddComment.mockResolvedValue({ id: 1, text: "comment" });
+
+    await handleWorkItems(["plan", "100"]);
+
+    // getLatestComment should have been called
+    expect(mockGetLatestComment).toHaveBeenCalledWith(100);
+    // mapAdoToLocal should have received the comment
+    const { mapAdoToLocal } = await import("../../src/cli/helpers.js");
+    expect(mapAdoToLocal).toHaveBeenCalledWith(item, "Check the auth module");
+  });
+
+  it("pushes locally modified latestComment as new ADO comment", async () => {
+    const originalItem = makeAdoItem({ state: "In Progress" });
+    const localItem = { ...makeAdoItem({ state: "In Progress" }), latestComment: "New feedback from local" };
+
+    mockGetItemState.mockResolvedValue({
+      localPath: "/mock/path.yaml",
+      adoRev: 1,
+      localHash: "old-hash",
+      lastSyncedAt: "2026-03-04T00:00:00.000Z",
+      syncStatus: "synced",
+    });
+    mockLoadById.mockResolvedValue(localItem);
+
+    mockGetWorkItem
+      .mockResolvedValueOnce(originalItem) // rev check
+      .mockResolvedValueOnce({ ...originalItem, rev: 2 }); // fresh fetch
+    mockUpdateWorkItem.mockResolvedValue({ ...originalItem, rev: 2 });
+    mockGetLatestComment.mockResolvedValue(undefined);
+    mockAddComment.mockResolvedValue({ id: 1, text: "comment" });
+
+    await handleWorkItems(["plan", "100"]);
+
+    // addComment should have been called for the locally edited comment (first call)
+    // and for the plan comment (second call)
+    const commentCalls = mockAddComment.mock.calls.filter(
+      (call: unknown[]) => call[0] === 100
+    );
+    const commentTexts = commentCalls.map((c: unknown[]) => c[1]);
+    expect(commentTexts).toContain("New feedback from local");
+  });
+
+  it("does not push latestComment when it matches baseline", async () => {
+    const originalItem = makeAdoItem({ state: "In Progress" });
+    const localItem = { ...makeAdoItem({ state: "In Progress" }), latestComment: "Same comment" };
+
+    mockGetItemState.mockResolvedValue({
+      localPath: "/mock/path.yaml",
+      adoRev: 1,
+      localHash: "old-hash",
+      lastSyncedAt: "2026-03-04T00:00:00.000Z",
+      syncStatus: "synced",
+    });
+    mockLoadById.mockResolvedValue(localItem);
+
+    mockGetWorkItem
+      .mockResolvedValueOnce(originalItem) // rev check
+      .mockResolvedValueOnce({ ...originalItem, rev: 2 }); // fresh fetch
+    mockUpdateWorkItem.mockResolvedValue({ ...originalItem, rev: 2 });
+    // adoToLocal mock returns item without latestComment by default,
+    // but mapAdoToLocal is mocked to pass through, so baseline.latestComment = undefined
+    // localItem.latestComment = "Same comment" → different, so it WILL push
+    // To test that same comment is NOT pushed, we'd need the baseline to match
+    mockGetLatestComment.mockResolvedValue("Same comment");
+    mockAddComment.mockResolvedValue({ id: 1, text: "comment" });
+
+    await handleWorkItems(["plan", "100"]);
+
+    // addComment first call should NOT be "Same comment" (it matches baseline)
+    // Only the plan comment should be added
+    const commentCalls = mockAddComment.mock.calls.filter(
+      (call: unknown[]) => call[0] === 100
+    );
+    const commentTexts = commentCalls.map((c: unknown[]) => c[1] as string);
+    expect(commentTexts.every((t: string) => t !== "Same comment")).toBe(true);
   });
 });

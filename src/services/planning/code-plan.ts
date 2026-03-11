@@ -32,6 +32,10 @@ export function getCodePlanGuidance(item: LocalWorkItemOutput): string {
     );
   }
 
+  if (item.latestComment) {
+    context.push(`## Latest Comment`, item.latestComment, "");
+  }
+
   context.push(
     `## Instructions`,
     ``,
