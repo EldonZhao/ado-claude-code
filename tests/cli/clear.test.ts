@@ -18,10 +18,10 @@ vi.mock("../../src/storage/config.js", () => ({
     sync: { autoSync: false, pullOnStartup: true, conflictResolution: "ask" },
   }),
   resolveStoragePath: vi.fn((p: string) => p),
+  getProjectRoot: vi.fn(() => "/fake/root"),
 }));
 
 vi.mock("../../src/cli/helpers.js", () => ({
-  getAdoClient: vi.fn().mockResolvedValue({}),
   output: (...args: unknown[]) => mockOutput(...args),
   fatal: vi.fn((msg: string) => { throw new Error(msg); }),
   parseFlags: vi.fn((args: string[]) => {
@@ -40,8 +40,8 @@ vi.mock("../../src/cli/helpers.js", () => ({
   }),
 }));
 
-vi.mock("../../src/storage/index.js", () => ({
-  getWorkItemStorage: vi.fn().mockResolvedValue({}),
+vi.mock("../../src/storage/work-items.js", () => ({
+  WorkItemStorage: vi.fn(),
 }));
 
 vi.mock("../../src/services/sync/state.js", () => ({
@@ -55,6 +55,10 @@ vi.mock("../../src/services/sync/engine.js", () => {
     },
   };
 });
+
+vi.mock("../../src/utils/logger.js", () => ({
+  logger: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 
 import { handleClear } from "../../src/cli/clear.js";
 
@@ -114,5 +118,16 @@ describe("handleClear CLI handler", () => {
     await handleClear(["--confirm"]);
 
     expect(mockOutput).toHaveBeenCalledWith(customResult);
+  });
+
+  it("falls back to defaults when config is not found", async () => {
+    const { loadConfig } = await import("../../src/storage/config.js");
+    vi.mocked(loadConfig).mockRejectedValueOnce(new Error("Config not found"));
+    mockClearAll.mockResolvedValue(dryRunResult);
+
+    await handleClear([]);
+
+    expect(mockClearAll).toHaveBeenCalledWith(false);
+    expect(mockOutput).toHaveBeenCalledWith(dryRunResult);
   });
 });

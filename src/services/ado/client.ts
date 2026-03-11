@@ -7,7 +7,7 @@ import type { Wiql } from "azure-devops-node-api/interfaces/WorkItemTrackingInte
 import type { AdoConfigOutput } from "../../schemas/config.schema.js";
 import { WorkItemError } from "../../utils/errors.js";
 import { logger } from "../../utils/logger.js";
-import { getCredentials } from "./auth.js";
+import { getCredentials, getTokenExpiration } from "./auth.js";
 import { getApiCache, CacheKeys } from "../../storage/cache.js";
 import type {
   AdoWorkItem,
@@ -19,12 +19,23 @@ import type {
 export class AdoClient {
   private connection: azdev.WebApi | null = null;
   private witApi: IWorkItemTrackingApi | null = null;
+  private tokenExpiresAt: number | null = null;
   private terminalStateCache = new Map<string, string>();
 
   constructor(private config: AdoConfigOutput) {}
 
   private async getConnection(): Promise<azdev.WebApi> {
-    if (this.connection) return this.connection;
+    // Invalidate cached connection if the token has been refreshed
+    if (this.connection) {
+      const currentExpiry = await getTokenExpiration();
+      if (currentExpiry !== this.tokenExpiresAt) {
+        logger.debug("Token refreshed, invalidating cached connection");
+        this.connection = null;
+        this.witApi = null;
+      } else {
+        return this.connection;
+      }
+    }
 
     const creds = await getCredentials(this.config);
     const orgUrl = this.config.azure_devops.organization;
@@ -35,6 +46,7 @@ export class AdoClient {
         : azdev.getBearerHandler(creds.token);
 
     this.connection = new azdev.WebApi(orgUrl, authHandler);
+    this.tokenExpiresAt = await getTokenExpiration();
     logger.info({ org: orgUrl }, "Connected to Azure DevOps");
     return this.connection;
   }

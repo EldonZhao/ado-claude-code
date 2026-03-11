@@ -21,6 +21,7 @@ vi.mock("azure-devops-node-api", () => {
 
 vi.mock("../../src/services/ado/auth.js", () => ({
   getCredentials: vi.fn().mockResolvedValue({ type: "pat", token: "fake" }),
+  getTokenExpiration: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock("../../src/storage/cache.js", () => ({

@@ -16,6 +16,9 @@ const ADO_SCOPE = "499b84ac-1321-427f-aa17-267ca6975798/.default";
 const TOKEN_CACHE_DIR = ".claude";
 const TOKEN_CACHE_FILE = ".ado-token-cache.json";
 
+// Buffer before actual expiry to trigger refresh (10 minutes)
+const TOKEN_EXPIRY_BUFFER_MS = 10 * 60 * 1000;
+
 interface CachedToken {
   accessToken: string;
   expiresOnTimestamp: number;
@@ -30,10 +33,13 @@ async function loadCachedToken(): Promise<CachedToken | null> {
     const cachePath = await getTokenCachePath();
     const raw = await fs.readFile(cachePath, "utf-8");
     const cached = JSON.parse(raw) as CachedToken;
-    // Consider token valid if it expires more than 5 minutes from now
-    if (cached.expiresOnTimestamp > Date.now() + 5 * 60 * 1000) {
+    const remainingMs = cached.expiresOnTimestamp - Date.now();
+    if (remainingMs > TOKEN_EXPIRY_BUFFER_MS) {
+      const remainingMin = Math.round(remainingMs / 60_000);
+      logger.debug({ remainingMin }, "Using cached token (%d min remaining)", remainingMin);
       return cached;
     }
+    logger.debug("Cached token expired or expiring soon, refresh needed");
     return null;
   } catch {
     return null;
@@ -65,6 +71,10 @@ async function getAzureCliToken(): Promise<string | null> {
         accessToken: tokenResponse.token,
         expiresOnTimestamp: tokenResponse.expiresOnTimestamp,
       });
+      const remainingMin = Math.round(
+        (tokenResponse.expiresOnTimestamp - Date.now()) / 60_000,
+      );
+      logger.debug({ remainingMin }, "Acquired new Azure CLI token (%d min remaining)", remainingMin);
       return tokenResponse.token;
     }
     return null;
@@ -136,4 +146,13 @@ export async function clearTokenCache(): Promise<void> {
   } catch {
     // File might not exist — that's fine
   }
+}
+
+/**
+ * Get the expiration timestamp of the current cached token.
+ * Returns null if no valid cached token exists.
+ */
+export async function getTokenExpiration(): Promise<number | null> {
+  const cached = await loadCachedToken();
+  return cached?.expiresOnTimestamp ?? null;
 }
