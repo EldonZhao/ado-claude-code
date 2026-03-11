@@ -1,7 +1,7 @@
 import { getAdoClient, getSyncStateManager, mapAdoToLocal, formatWorkItemSummary, output, fatal, parseFlags, markdownToHtml } from "./helpers.js";
 import { getWorkItemStorage } from "../storage/index.js";
 import { SyncStateManager } from "../services/sync/state.js";
-import { serializeForHash } from "../services/sync/mapper.js";
+import { adoToLocal, localToAdoPatch, serializeForHash } from "../services/sync/mapper.js";
 import { HIERARCHY } from "../services/planning/templates.js";
 import {
   createBreakdownProposal,
@@ -185,7 +185,10 @@ async function handleUpdate(args: string[]): Promise<void> {
 
     let commentAdded: { id: number; text: string } | undefined;
     try {
-      const commentText = `<p>Work item marked as completed by Claude at <code>${new Date().toISOString()}</code></p>\n<p>State: <strong>${previousState}</strong> → <strong>${terminalState}</strong></p>`;
+      let commentText = `<p>Work item marked as completed by Claude at <code>${new Date().toISOString()}</code></p>\n<p>State: <strong>${previousState}</strong> → <strong>${terminalState}</strong></p>`;
+      if (flags.comment) {
+        commentText += `\n<hr>\n${flags.comment}`;
+      }
       commentAdded = await client.addComment(id, commentText);
     } catch (err) {
       process.stderr.write(`Warning: Failed to add completion comment: ${err}\n`);
@@ -292,6 +295,42 @@ async function handlePlan(args: string[]): Promise<void> {
   const client = await getAdoClient();
   const storage = await getWorkItemStorage();
 
+  // Push local modifications to ADO before fetching (bidirectional sync)
+  try {
+    const stateManager = await getSyncStateManager();
+    const existingState = await stateManager.getItemState(id);
+    if (existingState) {
+      const localItem = await storage.loadById(id);
+      if (localItem) {
+        const currentHash = SyncStateManager.computeHash(serializeForHash(localItem));
+        if (currentHash !== existingState.localHash) {
+          // Local file was modified — push changes to ADO first
+          const remoteItem = await client.getWorkItem(id, "relations");
+          if (remoteItem.rev <= existingState.adoRev) {
+            const baseline = adoToLocal(remoteItem);
+            const patchOps = localToAdoPatch(localItem, baseline);
+            if (patchOps.length > 0) {
+              await client.updateWorkItem({
+                id,
+                title: localItem.title !== baseline.title ? localItem.title : undefined,
+                description: localItem.description !== baseline.description ? localItem.description : undefined,
+                state: localItem.state !== baseline.state ? localItem.state : undefined,
+                assignedTo: localItem.assignedTo !== baseline.assignedTo ? localItem.assignedTo : undefined,
+                areaPath: localItem.areaPath !== baseline.areaPath ? localItem.areaPath : undefined,
+                iterationPath: localItem.iterationPath !== baseline.iterationPath ? localItem.iterationPath : undefined,
+                priority: localItem.priority !== baseline.priority ? localItem.priority : undefined,
+                storyPoints: localItem.storyPoints !== baseline.storyPoints ? localItem.storyPoints : undefined,
+              });
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    process.stderr.write(`Warning: Failed to push local changes: ${err}\n`);
+  }
+
+  // Fetch fresh from ADO (picks up our pushed changes + any other remote changes)
   const adoItem = await client.getWorkItem(id, "relations");
   let item = mapAdoToLocal(adoItem);
   await saveAndTrack(storage, item);
