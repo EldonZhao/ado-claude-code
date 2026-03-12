@@ -14,7 +14,7 @@ Global flags:
   --project-dir=<path>   Project root directory (where .claude/ lives)
 
 Domains:
-  work-items   get|list|create|update|query|plan|workitem-plan
+  work-items   get|list|create|update|query|plan|workitem-plan|summary
   sync         pull|push|full
   clear        [--confirm]
   tsg          create|get|update|list|search|execute|score|ts

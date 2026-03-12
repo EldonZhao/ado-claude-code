@@ -26,7 +26,7 @@ node dist/cli.js <domain> <action> [--flags]
 
 ### Domains
 - `setup` — init, validate, show, login, logout
-- `work-items` — get, list, create, update, query, plan (code), workitem-plan (breakdown)
+- `work-items` — get, list, create, update, query, plan (code), workitem-plan (breakdown), summary
 - `sync` — pull, push, full
 - `clear` — [--confirm]
 - `tsg` — create, get, update, list, search, execute, score, diagnose, analyze, suggest, run
@@ -34,7 +34,7 @@ node dist/cli.js <domain> <action> [--flags]
 ## Architecture
 - `src/cli.ts` — CLI entry point (arg parsing + routing)
 - `src/cli/` — CLI handler modules
-  - `work-items.ts` — Work item CRUD, query, plan (code), workitem-plan (breakdown)
+  - `work-items.ts` — Work item CRUD, query, plan (code), workitem-plan (breakdown), summary
   - `sync.ts` — Bidirectional sync
   - `clear.ts` — Clear synced work items
   - `tsg.ts` — TSG CRUD, search, execute, score, diagnose, analyze, suggest, run
@@ -55,7 +55,7 @@ node dist/cli.js <domain> <action> [--flags]
 ## Plugin Structure
 - `.claude-plugin/plugin.json` — Plugin manifest
 - `dist/cli.js` — Self-contained CLI bundle (committed, no build step needed for marketplace installs)
-- `commands/*.md` — Slash commands (8)
+- `commands/*.md` — Slash commands (9)
 - `agents/*.md` — Specialist subagents (2)
 - `rules/*.md` — Always-active conventions
 
@@ -74,5 +74,5 @@ node dist/cli.js <domain> <action> [--flags]
 Tests live in `tests/` and use vitest. Run with `npm test`.
 - `tests/utils/` — Error class tests
 - `tests/services/` — TSG executor, TSG search, sync mapper, sync engine, planning tests
-- `tests/cli/` — CLI handler tests (clear, sync, work-items plan, work-items workitem-plan)
+- `tests/cli/` — CLI handler tests (clear, sync, work-items plan, work-items workitem-plan, work-items summary)
 - `tests/storage/` — Cache tests

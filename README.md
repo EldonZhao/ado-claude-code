@@ -98,7 +98,7 @@ export ADO_PAT="your-personal-access-token"
 
 ## What's Included
 
-### Slash Commands (8)
+### Slash Commands (9)
 
 | Command | Description |
 |---------|-------------|
@@ -110,6 +110,7 @@ export ADO_PAT="your-personal-access-token"
 | `/ado-claude-code:clear` | Clear all synced work items from local storage |
 | `/ado-claude-code:tsg` | Create, manage, and troubleshoot with TSGs |
 | `/ado-claude-code:setup` | Initialize, validate, login/logout, or show configuration |
+| `/ado-claude-code:summary` | Summarize Azure DevOps progress over a time period (week/month) |
 
 ### Agents (2)
 
@@ -192,6 +193,17 @@ defaults:
 
 Fetches the work item and returns structured guidance including files to analyze, architectural approach, step-by-step changes, testing suggestions, and edge cases. Automatically transitions the work item to "In Progress" and posts the plan as a comment.
 
+### Summary
+
+```
+/ado-claude-code:summary                                  # Summarize last week's activity
+/ado-claude-code:summary --period=month                   # Summarize last 30 days
+/ado-claude-code:summary --assignedTo=user@example.com    # Filter by assignee
+/ado-claude-code:summary --query="SELECT ..."             # Custom WIQL query
+```
+
+Queries Azure DevOps for recently changed work items, groups them by parent Feature, and classifies them into Completed, In Progress, Blocked/Bugs, and New. Returns structured JSON that Claude interprets into a human-readable progress summary.
+
 ### TSG
 
 ```
@@ -247,7 +259,7 @@ src/
   utils/                Logger, error classes
 
 .claude-plugin/         Plugin manifest + marketplace catalog
-commands/               Slash commands (8)
+commands/               Slash commands (9)
 agents/                 Specialist subagents (2)
 rules/                  Always-active conventions
 
