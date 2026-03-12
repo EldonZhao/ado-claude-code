@@ -1,6 +1,6 @@
 {
   "name": "ado-claude-code",
-  "version": "0.3.0",
+  "version": "1.2.0",
   "description": "Claude Code plugin for Azure DevOps integration",
   "main": "dist/cli.js",
   "bin": {
@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "version:bump": "node scripts/bump-version.js"
   },
   "keywords": [
     "claude-code",

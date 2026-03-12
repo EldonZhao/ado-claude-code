@@ -8,6 +8,8 @@ import { handleTroubleshoot } from "./cli/troubleshoot.js";
 import { handleClear } from "./cli/clear.js";
 import { setProjectDir } from "./storage/config.js";
 
+declare const __VERSION__: string;
+
 const USAGE = `Usage: ado-claude-code <domain> <action> [args]
 
 Global flags:
@@ -43,6 +45,11 @@ async function main(): Promise<void> {
 
   if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
     process.stdout.write(USAGE);
+    process.exit(0);
+  }
+
+  if (args[0] === "--version" || args[0] === "-v") {
+    process.stdout.write(`ado-claude-code v${__VERSION__}\n`);
     process.exit(0);
   }
 

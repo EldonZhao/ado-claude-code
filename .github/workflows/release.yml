@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch full history for release notes generation
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+      - name: Pin marketplace.json ref to release tag
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          node -e "
+            const fs = require('fs');
+            const p = '.claude-plugin/marketplace.json';
+            const m = JSON.parse(fs.readFileSync(p, 'utf8'));
+            m.plugins[0].source.ref = '${TAG}';
+            fs.writeFileSync(p, JSON.stringify(m, null, 2) + '\n');
+          "
+
+      - run: npm run build
+
+      - name: Verify dist/cli.js exists
+        run: test -f dist/cli.js
+
+      - name: Commit built artifacts to release branch
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          # Resolve the branch that contains this tag
+          BRANCH=$(git branch -r --contains "$TAG" | grep 'origin/release/' | head -1 | sed 's|.*origin/||' || echo "")
+          if [ -n "$BRANCH" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add dist/cli.js .claude-plugin/marketplace.json
+            git diff --cached --quiet || git commit -m "chore: update dist and pin marketplace ref to ${TAG}"
+            git push origin HEAD:refs/heads/${BRANCH}
+          fi
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          PREV_TAG=$(git describe --tags --abbrev=0 "$TAG^" 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            NOTES=$(git log --pretty=format:"- %s (%h)" "$PREV_TAG".."$TAG")
+          else
+            NOTES=$(git log --pretty=format:"- %s (%h)" "$TAG")
+          fi
+          {
+            echo "notes<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: |
+            ## Install
+
+            Latest (main):
+            ```
+            claude plugin add EldonZhao/ado-claude-code
+            ```
+
+            This version (${{ github.ref_name }}):
+            ```
+            claude plugin add EldonZhao/ado-claude-code@${{ github.ref_name }}
+            ```
+
+            ## Changes
+            ${{ steps.notes.outputs.notes }}
+          files: dist/cli.js

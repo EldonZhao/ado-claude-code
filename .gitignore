@@ -23,3 +23,6 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+# Note: dist/ is intentionally NOT ignored — dist/cli.js is committed
+# for marketplace installs that don't run a build step.

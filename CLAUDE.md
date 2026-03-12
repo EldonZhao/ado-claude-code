@@ -18,6 +18,7 @@ node dist/cli.js setup login   # Opens browser for Azure AD login
 - `npm start` — Run CLI (shows help)
 - `npm test` — Run tests
 - `npm run lint` — Type check
+- `npm run version:bump -- X.Y.Z` — Bump version across all config files
 
 ## CLI Usage
 ```
@@ -76,3 +77,10 @@ Tests live in `tests/` and use vitest. Run with `npm test`.
 - `tests/services/` — TSG executor, TSG search, sync mapper, sync engine, planning tests
 - `tests/cli/` — CLI handler tests (clear, sync, work-items plan, work-items workitem-plan, work-items summary)
 - `tests/storage/` — Cache tests
+
+## Releasing
+See [RELEASING.md](RELEASING.md) for the full branch strategy and release workflow.
+- Bump: `npm run version:bump -- X.Y.Z` (syncs package.json, plugin.json, marketplace.json)
+- CI: `.github/workflows/ci.yml` (PR + push to main)
+- Release: `.github/workflows/release.yml` (tag push → GitHub Release with dist/cli.js)
+- Branch model: `main` (dev) + `release/X.Y` (stable)
