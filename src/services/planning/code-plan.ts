@@ -1,4 +1,4 @@
-import type { LocalWorkItemOutput } from "../../schemas/work-item.schema.js";
+import type { LocalWorkItemOutput } from "../../schemas/workitem.schema.js";
 
 /**
  * Generate code implementation planning guidance for a work item.

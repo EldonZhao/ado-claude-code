@@ -5,7 +5,7 @@ import {
   formatProposal,
   getBreakdownGuidance,
 } from "../../src/services/planning/breakdown.js";
-import type { LocalWorkItemOutput } from "../../src/schemas/work-item.schema.js";
+import type { LocalWorkItemOutput } from "../../src/schemas/workitem.schema.js";
 
 function makeParent(
   overrides?: Partial<LocalWorkItemOutput>,
@@ -169,7 +169,7 @@ describe("getBreakdownGuidance", () => {
     const guidance = getBreakdownGuidance(parent);
     expect(guidance).toContain("Break down this Epic into Feature(s)");
     expect(guidance).toContain("#100");
-    expect(guidance).toContain("ado_work_items_workitem_plan");
+    expect(guidance).toContain("ado_workitems_workitem_plan");
   });
 
   it("includes description when available", () => {

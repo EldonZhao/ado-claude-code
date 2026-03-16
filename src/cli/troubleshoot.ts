@@ -1,5 +1,5 @@
 import { output, fatal, parseFlags } from "./helpers.js";
-import { getTsgStorage } from "../storage/index.js";
+import { getInstructionsStorage } from "../storage/index.js";
 import { TsgService } from "../services/tsg/index.js";
 import {
   getMissingParameters,
@@ -11,7 +11,7 @@ import type { TsgOutput } from "../schemas/tsg.schema.js";
 export async function handleTroubleshoot(args: string[]): Promise<void> {
   const action = args[0];
   if (!action || !["diagnose", "analyze", "suggest", "run"].includes(action)) {
-    fatal("Usage: tsg <diagnose|analyze|suggest|run> [args]");
+    fatal("Usage: instructions <diagnose|analyze|suggest|run> [args]");
   }
 
   switch (action) {
@@ -29,11 +29,11 @@ export async function handleTroubleshoot(args: string[]): Promise<void> {
 export async function handleDiagnose(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   if (!flags.symptoms) {
-    fatal("Usage: tsg diagnose --symptoms='[\"symptom1\",\"symptom2\"]' [--category=...]");
+    fatal("Usage: instructions diagnose --symptoms='[\"symptom1\",\"symptom2\"]' [--category=...]");
   }
 
   const symptoms: string[] = JSON.parse(flags.symptoms);
-  const storage = await getTsgStorage();
+  const storage = await getInstructionsStorage();
   const service = new TsgService(storage);
 
   const results = await service.search({
@@ -75,11 +75,11 @@ export async function handleDiagnose(args: string[]): Promise<void> {
 export async function handleAnalyze(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   if (!flags.output) {
-    fatal("Usage: tsg analyze --output=<diagnostic output> [--tsgId=...] [--stepId=...]");
+    fatal("Usage: instructions analyze --output=<diagnostic output> [--tsgId=...] [--stepId=...]");
   }
 
   const diagnosticOutput = flags.output;
-  const storage = await getTsgStorage();
+  const storage = await getInstructionsStorage();
 
   interface PatternMatch {
     pattern: string;
@@ -125,10 +125,10 @@ export async function handleAnalyze(args: string[]): Promise<void> {
 export async function handleSuggest(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   if (!flags.tsgId || !flags.rootCause) {
-    fatal("Usage: tsg suggest --tsgId=<id> --rootCause=<cause> [--parameters='{...}']");
+    fatal("Usage: instructions suggest --tsgId=<id> --rootCause=<cause> [--parameters='{...}']");
   }
 
-  const storage = await getTsgStorage();
+  const storage = await getInstructionsStorage();
   const tsg = await storage.loadById(flags.tsgId);
   if (!tsg) fatal(`TSG "${flags.tsgId}" not found.`);
 
@@ -255,11 +255,11 @@ function analyzeAgainstAllTsgs(
 export async function handleRun(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   if (!flags.symptoms) {
-    fatal("Usage: tsg run --symptoms='[\"symptom1\"]' [--category=...] [--output=<diagnostic output>] [--parameters='{...}']");
+    fatal("Usage: instructions run --symptoms='[\"symptom1\"]' [--category=...] [--output=<diagnostic output>] [--parameters='{...}']");
   }
 
   const symptoms: string[] = JSON.parse(flags.symptoms);
-  const storage = await getTsgStorage();
+  const storage = await getInstructionsStorage();
   const service = new TsgService(storage);
   const parameters = flags.parameters ? JSON.parse(flags.parameters) : {};
 

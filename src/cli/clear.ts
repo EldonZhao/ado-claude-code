@@ -7,7 +7,7 @@ import { SyncEngine } from "../services/sync/engine.js";
 import { logger } from "../utils/logger.js";
 
 // Default storage layout matching config schema defaults
-const DEFAULT_BASE_PATH = "./.claude/ado";
+const DEFAULT_BASE_PATH = "./.github";
 const DEFAULT_WORK_ITEMS_PATH = "workitems";
 
 export async function handleClear(args: string[]): Promise<void> {

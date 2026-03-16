@@ -10,6 +10,7 @@ const mockStorage = {
 };
 
 vi.mock("../../src/storage/index.js", () => ({
+  getInstructionsStorage: async () => mockStorage,
   getTsgStorage: async () => mockStorage,
 }));
 
@@ -34,7 +35,7 @@ vi.mock("../../src/cli/helpers.js", () => ({
   },
 }));
 
-const { handleTsg } = await import("../../src/cli/tsg.js");
+const { handleInstructions } = await import("../../src/cli/instructions.js");
 
 function makeTsg(overrides?: Partial<TsgOutput>): TsgOutput {
   return {
@@ -59,7 +60,7 @@ describe("tsg score", () => {
 
   it("returns 0 score for empty TSG", async () => {
     mockStorage.loadById.mockResolvedValue(makeTsg());
-    await handleTsg(["score", "tsg-test-001"]);
+    await handleInstructions(["score", "tsg-test-001"]);
 
     const result = captured as Record<string, unknown>;
     expect(result.id).toBe("tsg-test-001");
@@ -73,7 +74,7 @@ describe("tsg score", () => {
     mockStorage.loadById.mockResolvedValue(
       makeTsg({ symptoms: ["s1", "s2", "s3", "s4", "s5"] }),
     );
-    await handleTsg(["score", "tsg-test-001"]);
+    await handleInstructions(["score", "tsg-test-001"]);
 
     const result = captured as Record<string, unknown>;
     const bd = result.breakdown as Record<string, { score: number; max: number }>;
@@ -86,7 +87,7 @@ describe("tsg score", () => {
     mockStorage.loadById.mockResolvedValue(
       makeTsg({ relatedErrors: ["e1", "e2"] }),
     );
-    await handleTsg(["score", "tsg-test-001"]);
+    await handleInstructions(["score", "tsg-test-001"]);
 
     const result = captured as Record<string, unknown>;
     const bd = result.breakdown as Record<string, { score: number; max: number }>;
@@ -112,7 +113,7 @@ describe("tsg score", () => {
         ],
       }),
     );
-    await handleTsg(["score", "tsg-test-001"]);
+    await handleInstructions(["score", "tsg-test-001"]);
 
     const result = captured as Record<string, unknown>;
     const bd = result.breakdown as Record<string, { score: number; max: number }>;
@@ -143,7 +144,7 @@ describe("tsg score", () => {
         ],
       }),
     );
-    await handleTsg(["score", "tsg-test-001"]);
+    await handleInstructions(["score", "tsg-test-001"]);
 
     const result = captured as Record<string, unknown>;
     const bd = result.breakdown as Record<string, { score: number; max: number }>;
@@ -163,7 +164,7 @@ describe("tsg score", () => {
         },
       }),
     );
-    await handleTsg(["score", "tsg-test-001"]);
+    await handleInstructions(["score", "tsg-test-001"]);
 
     const result = captured as Record<string, unknown>;
     const bd = result.breakdown as Record<string, { score: number; max: number }>;
@@ -179,7 +180,7 @@ describe("tsg score", () => {
         },
       }),
     );
-    await handleTsg(["score", "tsg-test-001"]);
+    await handleInstructions(["score", "tsg-test-001"]);
 
     const result = captured as Record<string, unknown>;
     const bd = result.breakdown as Record<string, { score: number; max: number }>;
@@ -219,7 +220,7 @@ describe("tsg score", () => {
         escalation: { timeout: "15m", contacts: [{ team: "SRE" }] },
       }),
     );
-    await handleTsg(["score", "tsg-test-001"]);
+    await handleInstructions(["score", "tsg-test-001"]);
 
     const result = captured as Record<string, unknown>;
     expect(result.score).toBe(125);
@@ -228,11 +229,11 @@ describe("tsg score", () => {
   });
 
   it("throws when no id provided", async () => {
-    await expect(handleTsg(["score"])).rejects.toThrow("Usage:");
+    await expect(handleInstructions(["score"])).rejects.toThrow("Usage:");
   });
 
   it("throws when TSG not found", async () => {
     mockStorage.loadById.mockResolvedValue(null);
-    await expect(handleTsg(["score", "tsg-x"])).rejects.toThrow("not found");
+    await expect(handleInstructions(["score", "tsg-x"])).rejects.toThrow("not found");
   });
 });

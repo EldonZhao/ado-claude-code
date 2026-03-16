@@ -1,5 +1,5 @@
 ---
-name: ado-claude-code:tsg
+name: ado-claude-code:instructions
 description: Create, manage, and troubleshoot with Troubleshooting Guides (TSGs)
 arguments:
   - name: action
@@ -25,18 +25,18 @@ arguments:
     required: false
 ---
 
-# TSG Management & Troubleshooting
+# Instructions Management & Troubleshooting
 
 Create and manage structured Troubleshooting Guides, and run AI-assisted troubleshooting workflows.
 
 **IMPORTANT:** The CLI is at `dist/cli.js` within the plugin's install directory. To find it, read `~/.claude/plugins/installed_plugins.json`, look up `ado-claude-code@ado-claude-code`, and use its `installPath` + `/dist/cli.js`.
 
-**IMPORTANT:** Always pass `--project-dir=<user's project root>` so TSGs are stored in the project's `.claude/` directory, not the plugin's.
+**IMPORTANT:** Always pass `--project-dir=<user's project root>` so instructions are stored in the project's `.github/` directory, not the plugin's.
 
 ## Create a TSG
 
 ```bash
-node dist/cli.js tsg create --project-dir=/path/to/project --title="Pod OOM" --category=deployment --tags='["oom","kubernetes"]' --symptoms='["pod keeps restarting","OOMKilled in events"]'
+node dist/cli.js instructions create --project-dir=/path/to/project --title="Pod OOM" --category=deployment --tags='["oom","kubernetes"]' --symptoms='["pod keeps restarting","OOMKilled in events"]'
 ```
 
 ### Create from template
@@ -44,7 +44,7 @@ node dist/cli.js tsg create --project-dir=/path/to/project --title="Pod OOM" --c
 Use `--template` to start from a category-specific skeleton with pre-filled symptoms, diagnostics, and escalation:
 
 ```bash
-node dist/cli.js tsg create --title="Pod OOM" --category=deployment --template
+node dist/cli.js instructions create --title="Pod OOM" --category=deployment --template
 ```
 
 Available templates: deployment, database, networking, authentication, performance. User-provided fields override template defaults.
@@ -52,7 +52,7 @@ Available templates: deployment, database, networking, authentication, performan
 ### Create with full JSON
 
 ```bash
-node dist/cli.js tsg create --json='{"title":"...","category":"...","diagnostics":[...],"resolutions":{...}}'
+node dist/cli.js instructions create --json='{"title":"...","category":"...","diagnostics":[...],"resolutions":{...}}'
 ```
 
 ### Import from file
@@ -60,13 +60,13 @@ node dist/cli.js tsg create --json='{"title":"...","category":"...","diagnostics
 Import an existing TSG markdown file (with YAML frontmatter):
 
 ```bash
-node dist/cli.js tsg create --file=./existing-tsg.md
+node dist/cli.js instructions create --file=./existing-tsg.md
 ```
 
 Import a plain text file as a manual diagnostic step (requires `--title` and `--category`):
 
 ```bash
-node dist/cli.js tsg create --file=./docs/runbook-oom.md --title="OOM Runbook" --category=deployment
+node dist/cli.js instructions create --file=./docs/runbook-oom.md --title="OOM Runbook" --category=deployment
 ```
 
 Flags like `--title`, `--category`, `--author`, `--tags`, and `--symptoms` override values from the imported file.
@@ -74,33 +74,33 @@ Flags like `--title`, `--category`, `--author`, `--tags`, and `--symptoms` overr
 ## Get a TSG
 
 ```bash
-node dist/cli.js tsg get tsg-deployment-001
+node dist/cli.js instructions get tsg-deployment-001
 ```
 
 ## Update a TSG
 
 ```bash
-node dist/cli.js tsg update tsg-deployment-001 --title="Updated Title" --tags='["new-tag"]'
+node dist/cli.js instructions update tsg-deployment-001 --title="Updated Title" --tags='["new-tag"]'
 ```
 
 ## List TSGs
 
 ```bash
-node dist/cli.js tsg list
-node dist/cli.js tsg list --category=deployment
+node dist/cli.js instructions list
+node dist/cli.js instructions list --category=deployment
 ```
 
 ## Search TSGs
 
 ```bash
-node dist/cli.js tsg search --query="pod restarting" --symptoms='["OOMKilled"]' --category=deployment
+node dist/cli.js instructions search --query="pod restarting" --symptoms='["OOMKilled"]' --category=deployment
 ```
 
 ## Execute a TSG step
 
 ```bash
-node dist/cli.js tsg execute tsg-deployment-001 --stepId=check-pod-status --parameters='{"podName":"my-pod"}'
-node dist/cli.js tsg execute tsg-deployment-001 --rootCause=oom --parameters='{"podName":"my-pod"}'
+node dist/cli.js instructions execute tsg-deployment-001 --stepId=check-pod-status --parameters='{"podName":"my-pod"}'
+node dist/cli.js instructions execute tsg-deployment-001 --rootCause=oom --parameters='{"podName":"my-pod"}'
 ```
 
 ## Score a TSG
@@ -108,7 +108,7 @@ node dist/cli.js tsg execute tsg-deployment-001 --rootCause=oom --parameters='{"
 Evaluate TSG completeness and get suggestions for improvement:
 
 ```bash
-node dist/cli.js tsg score tsg-deployment-001
+node dist/cli.js instructions score tsg-deployment-001
 ```
 
 Returns a score (0–125) with breakdown by: symptoms, related errors, diagnostics, analysis patterns, resolutions, and escalation.
@@ -118,7 +118,7 @@ Returns a score (0–125) with breakdown by: symptoms, related errors, diagnosti
 ### Diagnose — Find matching TSGs
 
 ```bash
-node dist/cli.js tsg diagnose --project-dir=/path/to/project --symptoms='["pod keeps restarting","OOMKilled"]' --category=deployment
+node dist/cli.js instructions diagnose --project-dir=/path/to/project --symptoms='["pod keeps restarting","OOMKilled"]' --category=deployment
 ```
 
 Returns matched TSGs with recommended diagnostic steps.
@@ -126,7 +126,7 @@ Returns matched TSGs with recommended diagnostic steps.
 ### Analyze — Analyze diagnostic output
 
 ```bash
-node dist/cli.js tsg analyze --output="<paste diagnostic output>" --tsgId=tsg-deployment-001 --stepId=check-pod-status
+node dist/cli.js instructions analyze --output="<paste diagnostic output>" --tsgId=tsg-deployment-001 --stepId=check-pod-status
 ```
 
 Matches patterns from TSG analysis rules to identify root causes.
@@ -134,7 +134,7 @@ Matches patterns from TSG analysis rules to identify root causes.
 ### Suggest — Get resolution steps
 
 ```bash
-node dist/cli.js tsg suggest --tsgId=tsg-deployment-001 --rootCause=oom --parameters='{"podName":"my-pod","namespace":"default"}'
+node dist/cli.js instructions suggest --tsgId=tsg-deployment-001 --rootCause=oom --parameters='{"podName":"my-pod","namespace":"default"}'
 ```
 
 Returns actionable resolution steps with resolved commands.
@@ -144,13 +144,13 @@ Returns actionable resolution steps with resolved commands.
 Chains diagnose → diagnostics → analyze → suggest in a single command:
 
 ```bash
-node dist/cli.js tsg run --symptoms='["pod keeps restarting"]' --category=deployment --parameters='{"podName":"my-pod"}'
+node dist/cli.js instructions run --symptoms='["pod keeps restarting"]' --category=deployment --parameters='{"podName":"my-pod"}'
 ```
 
 With diagnostic output for analysis:
 
 ```bash
-node dist/cli.js tsg run --symptoms='["pod keeps restarting"]' --output="OOMKilled" --parameters='{"podName":"my-pod"}'
+node dist/cli.js instructions run --symptoms='["pod keeps restarting"]' --output="OOMKilled" --parameters='{"podName":"my-pod"}'
 ```
 
 Returns the best-matching TSG with prepared diagnostic steps. When `--output` is provided, also analyzes the output for root cause matches and suggests resolutions.

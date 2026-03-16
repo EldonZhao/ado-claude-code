@@ -2,7 +2,7 @@ import { logger } from "./utils/logger.js";
 import { formatError } from "./utils/errors.js";
 import { handleWorkItems } from "./cli/workitems.js";
 import { handleSync } from "./cli/sync.js";
-import { handleTsg } from "./cli/tsg.js";
+import { handleInstructions } from "./cli/instructions.js";
 import { handleSetup } from "./cli/setup.js";
 import { handleTroubleshoot } from "./cli/troubleshoot.js";
 import { handleClear } from "./cli/clear.js";
@@ -19,15 +19,15 @@ Domains:
   workitems    get|list|create|update|query|plan|workitem-plan|summary
   sync         pull|push|full
   clear        [--confirm]
-  tsg          create|get|update|list|search|execute|score|ts
+  instructions create|get|update|list|search|execute|score|ts
   setup        init|validate|show
 
 Examples:
   ado-claude-code setup init --organization=https://dev.azure.com/myorg --project=MyProject
   ado-claude-code sync pull --query="SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'Active'"
   ado-claude-code workitems get 1234
-  ado-claude-code tsg list --category=deployment
-  ado-claude-code tsg ts diagnose --symptoms='["pod restarting"]'
+  ado-claude-code instructions list --category=deployment
+  ado-claude-code instructions ts diagnose --symptoms='["pod restarting"]'
 `;
 
 async function main(): Promise<void> {
@@ -67,8 +67,8 @@ async function main(): Promise<void> {
       case "clear":
         await handleClear(rest);
         break;
-      case "tsg":
-        await handleTsg(rest);
+      case "instructions":
+        await handleInstructions(rest);
         break;
       case "setup":
         await handleSetup(rest);

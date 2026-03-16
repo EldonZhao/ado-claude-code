@@ -26,22 +26,22 @@ describe("ensureProjectGitignore", () => {
     expect(content).toContain("# ADO plugin");
     expect(content).toContain(".claude/.ado-config.yaml");
     expect(content).toContain(".claude/.ado-token-cache.json");
-    expect(content).toContain(".claude/ado/workitems/");
-    expect(content).toContain(".claude/ado/.ado-sync/");
+    expect(content).toContain(".github/workitems/");
+    expect(content).toContain(".github/.ado-sync/");
   });
 
-  it("does not add .claude/ado/tsgs/ to .gitignore", async () => {
+  it("does not add .github/instructions/ to .gitignore", async () => {
     await ensureProjectGitignore();
 
     const content = await fs.readFile(path.join(tmpDir, ".gitignore"), "utf-8");
-    expect(content).not.toContain("tsgs");
+    expect(content).not.toContain("instructions/");
   });
 
-  it("creates tsgs directory if missing", async () => {
+  it("creates instructions directory if missing", async () => {
     await ensureProjectGitignore();
 
-    const tsgDir = path.join(tmpDir, ".claude", "ado", "tsgs");
-    const stat = await fs.stat(tsgDir);
+    const instructionsDir = path.join(tmpDir, ".github", "instructions");
+    const stat = await fs.stat(instructionsDir);
     expect(stat.isDirectory()).toBe(true);
   });
 
@@ -54,7 +54,7 @@ describe("ensureProjectGitignore", () => {
     const content = await fs.readFile(path.join(tmpDir, ".gitignore"), "utf-8");
     expect(content).toContain("node_modules/");
     expect(content).toContain(".env");
-    expect(content).toContain(".claude/ado/workitems/");
+    expect(content).toContain(".github/workitems/");
     expect(content).toContain("# ADO plugin");
   });
 
@@ -87,7 +87,7 @@ describe("ensureProjectGitignore", () => {
     const content = await fs.readFile(path.join(tmpDir, ".gitignore"), "utf-8");
     // Should add a newline before our entries
     expect(content).toMatch(/node_modules\/\n/);
-    expect(content).toContain(".claude/ado/workitems/");
+    expect(content).toContain(".github/workitems/");
   });
 
   it("only adds missing entries when some already exist", async () => {
@@ -102,7 +102,7 @@ describe("ensureProjectGitignore", () => {
     expect(configMatches).toHaveLength(1);
     // Should add the missing ones
     expect(content).toContain(".claude/.ado-token-cache.json");
-    expect(content).toContain(".claude/ado/workitems/");
-    expect(content).toContain(".claude/ado/.ado-sync/");
+    expect(content).toContain(".github/workitems/");
+    expect(content).toContain(".github/.ado-sync/");
   });
 });

@@ -13,6 +13,7 @@ const mockStorage = {
 };
 
 vi.mock("../../src/storage/index.js", () => ({
+  getInstructionsStorage: async () => mockStorage,
   getTsgStorage: async () => mockStorage,
 }));
 
@@ -52,7 +53,7 @@ vi.mock("node:fs/promises", async () => {
   };
 });
 
-const { handleTsg } = await import("../../src/cli/tsg.js");
+const { handleInstructions } = await import("../../src/cli/instructions.js");
 
 describe("tsg create --file", () => {
   beforeEach(() => {
@@ -74,7 +75,7 @@ describe("tsg create --file", () => {
 
     vi.mocked(fs.readFile).mockResolvedValue(mdContent);
 
-    await handleTsg(["create", "--file=./test.md"]);
+    await handleInstructions(["create", "--file=./test.md"]);
 
     expect(mockStorage.save).toHaveBeenCalledTimes(1);
     const saved = mockStorage.save.mock.calls[0][0];
@@ -93,7 +94,7 @@ describe("tsg create --file", () => {
     const plainText = "Step 1: Check the pod status\nStep 2: Review logs";
     vi.mocked(fs.readFile).mockResolvedValue(plainText);
 
-    await handleTsg([
+    await handleInstructions([
       "create",
       "--file=./runbook.txt",
       "--title=My Runbook",
@@ -113,7 +114,7 @@ describe("tsg create --file", () => {
     vi.mocked(fs.readFile).mockResolvedValue("some plain text");
 
     await expect(
-      handleTsg(["create", "--file=./runbook.txt", "--category=ops"]),
+      handleInstructions(["create", "--file=./runbook.txt", "--category=ops"]),
     ).rejects.toThrow("requires --title and --category");
   });
 
@@ -121,7 +122,7 @@ describe("tsg create --file", () => {
     vi.mocked(fs.readFile).mockResolvedValue("some plain text");
 
     await expect(
-      handleTsg(["create", "--file=./runbook.txt", "--title=My Runbook"]),
+      handleInstructions(["create", "--file=./runbook.txt", "--title=My Runbook"]),
     ).rejects.toThrow("requires --title and --category");
   });
 
@@ -137,7 +138,7 @@ describe("tsg create --file", () => {
 
     vi.mocked(fs.readFile).mockResolvedValue(mdContent);
 
-    await handleTsg([
+    await handleInstructions([
       "create",
       "--file=./test.md",
       "--title=Overridden Title",
@@ -157,7 +158,7 @@ describe("tsg create --file", () => {
     vi.mocked(fs.readFile).mockRejectedValue(new Error("ENOENT"));
 
     await expect(
-      handleTsg(["create", "--file=./nonexistent.md"]),
+      handleInstructions(["create", "--file=./nonexistent.md"]),
     ).rejects.toThrow("File not found");
   });
 });

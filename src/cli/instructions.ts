@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import { output, fatal, parseFlags } from "./helpers.js";
-import { getTsgStorage } from "../storage/index.js";
+import { getInstructionsStorage } from "../storage/index.js";
 import { TsgService } from "../services/tsg/index.js";
 import { TsgSchema } from "../schemas/tsg.schema.js";
 import {
@@ -13,10 +13,10 @@ import { getTsgTemplate, getTemplateCategories } from "../services/tsg/templates
 import { markdownToTsg } from "../services/tsg/markdown.js";
 import { handleTroubleshoot, handleDiagnose, handleAnalyze, handleSuggest, handleRun } from "./troubleshoot.js";
 
-export async function handleTsg(args: string[]): Promise<void> {
+export async function handleInstructions(args: string[]): Promise<void> {
   const action = args[0];
   if (!action) {
-    fatal("Usage: tsg <create|get|update|list|search|execute|score|diagnose|analyze|suggest|run> [args]");
+    fatal("Usage: instructions <create|get|update|list|search|execute|score|diagnose|analyze|suggest|run> [args]");
   }
 
   switch (action) {
@@ -45,13 +45,13 @@ export async function handleTsg(args: string[]): Promise<void> {
     case "ts":
       return handleTroubleshoot(args.slice(1));
     default:
-      fatal(`Unknown tsg action: ${action}. Use create|get|update|list|search|execute|score|diagnose|analyze|suggest|run`);
+      fatal(`Unknown instructions action: ${action}. Use create|get|update|list|search|execute|score|diagnose|analyze|suggest|run`);
   }
 }
 
 async function handleCreate(args: string[]): Promise<void> {
   const flags = parseFlags(args);
-  const storage = await getTsgStorage();
+  const storage = await getInstructionsStorage();
 
   // --file: import from file
   if (flags.file) {
@@ -63,7 +63,7 @@ async function handleCreate(args: string[]): Promise<void> {
     input = JSON.parse(flags.json);
   } else {
     if (!flags.title || !flags.category) {
-      fatal("Usage: tsg create --title=<title> --category=<cat> [--template] [--file=<path>] [--tags='[...]'] [--symptoms='[...]'] or --json='{...}'");
+      fatal("Usage: instructions create --title=<title> --category=<cat> [--template] [--file=<path>] [--tags='[...]'] [--symptoms='[...]'] or --json='{...}'");
     }
     input = {
       title: flags.title,
@@ -119,7 +119,7 @@ async function handleCreate(args: string[]): Promise<void> {
 async function importFromFile(
   filePath: string,
   flags: Record<string, string>,
-  storage: Awaited<ReturnType<typeof getTsgStorage>>,
+  storage: Awaited<ReturnType<typeof getInstructionsStorage>>,
 ): Promise<void> {
   let content: string;
   try {
@@ -185,9 +185,9 @@ async function importFromFile(
 
 async function handleGet(args: string[]): Promise<void> {
   const id = args.find((a) => !a.startsWith("--"));
-  if (!id) fatal("Usage: tsg get <id>");
+  if (!id) fatal("Usage: instructions get <id>");
 
-  const storage = await getTsgStorage();
+  const storage = await getInstructionsStorage();
   const tsg = await storage.loadById(id);
 
   if (!tsg) {
@@ -200,9 +200,9 @@ async function handleGet(args: string[]): Promise<void> {
 async function handleUpdate(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const id = args.find((a) => !a.startsWith("--")) ?? flags.id;
-  if (!id) fatal("Usage: tsg update <id> [--title=...] [--tags='[...]'] or --json='{...}'");
+  if (!id) fatal("Usage: instructions update <id> [--title=...] [--tags='[...]'] or --json='{...}'");
 
-  const storage = await getTsgStorage();
+  const storage = await getInstructionsStorage();
   const existing = await storage.loadById(id);
   if (!existing) fatal(`TSG "${id}" not found.`);
 
@@ -233,7 +233,7 @@ async function handleUpdate(args: string[]): Promise<void> {
 
 async function handleList(args: string[]): Promise<void> {
   const flags = parseFlags(args);
-  const storage = await getTsgStorage();
+  const storage = await getInstructionsStorage();
 
   const tsgs = flags.category
     ? await storage.listByCategory(flags.category)
@@ -259,7 +259,7 @@ async function handleList(args: string[]): Promise<void> {
 
 async function handleSearch(args: string[]): Promise<void> {
   const flags = parseFlags(args);
-  const storage = await getTsgStorage();
+  const storage = await getInstructionsStorage();
   const service = new TsgService(storage);
 
   const results = await service.search({
@@ -289,9 +289,9 @@ async function handleSearch(args: string[]): Promise<void> {
 async function handleExecute(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const id = args.find((a) => !a.startsWith("--")) ?? flags.id;
-  if (!id) fatal("Usage: tsg execute <id> [--stepId=...] [--rootCause=...] [--parameters='{...}']");
+  if (!id) fatal("Usage: instructions execute <id> [--stepId=...] [--rootCause=...] [--parameters='{...}']");
 
-  const storage = await getTsgStorage();
+  const storage = await getInstructionsStorage();
   const tsg = await storage.loadById(id);
   if (!tsg) fatal(`TSG "${id}" not found.`);
 
@@ -366,9 +366,9 @@ function mergeTemplate(
 
 async function handleScore(args: string[]): Promise<void> {
   const id = args.find((a) => !a.startsWith("--"));
-  if (!id) fatal("Usage: tsg score <id>");
+  if (!id) fatal("Usage: instructions score <id>");
 
-  const storage = await getTsgStorage();
+  const storage = await getInstructionsStorage();
   const tsg = await storage.loadById(id);
   if (!tsg) fatal(`TSG "${id}" not found.`);
 

@@ -1,7 +1,7 @@
 import { AdoClient } from "../services/ado/client.js";
 import type { AdoWorkItem } from "../services/ado/types.js";
 import type { AdoConfigOutput } from "../schemas/config.schema.js";
-import type { LocalWorkItemOutput } from "../schemas/work-item.schema.js";
+import type { LocalWorkItemOutput } from "../schemas/workitem.schema.js";
 import { adoToLocal } from "../services/sync/mapper.js";
 import { SyncStateManager } from "../services/sync/state.js";
 import { loadConfig, resolveStoragePath } from "../storage/config.js";

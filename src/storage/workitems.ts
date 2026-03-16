@@ -4,7 +4,7 @@ import { stringify as stringifyYaml, parse as parseYaml } from "yaml";
 import {
   LocalWorkItemSchema,
   type LocalWorkItemOutput,
-} from "../schemas/work-item.schema.js";
+} from "../schemas/workitem.schema.js";
 import type { WorkItemType } from "../types/index.js";
 import { WorkItemError } from "../utils/errors.js";
 import { logger } from "../utils/logger.js";

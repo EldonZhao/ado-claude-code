@@ -5,7 +5,7 @@ import { TsgStorage } from "./tsg.js";
 import type { AdoConfigOutput } from "../schemas/config.schema.js";
 
 let workItemStorage: WorkItemStorage | null = null;
-let tsgStorage: TsgStorage | null = null;
+let instructionsStorage: TsgStorage | null = null;
 
 export async function getWorkItemStorage(
   configOverride?: AdoConfigOutput,
@@ -20,16 +20,19 @@ export async function getWorkItemStorage(
   return workItemStorage;
 }
 
-export async function getTsgStorage(
+export async function getInstructionsStorage(
   configOverride?: AdoConfigOutput,
 ): Promise<TsgStorage> {
-  if (tsgStorage) return tsgStorage;
+  if (instructionsStorage) return instructionsStorage;
 
   const config = configOverride ?? (await loadConfig());
   const resolvedBase = resolveStoragePath(config.storage.basePath);
-  const basePath = path.resolve(resolvedBase, config.storage.tsgPath);
-  tsgStorage = new TsgStorage(basePath);
-  return tsgStorage;
+  const basePath = path.resolve(resolvedBase, config.storage.instructionsPath);
+  instructionsStorage = new TsgStorage(basePath);
+  return instructionsStorage;
 }
+
+/** @deprecated Use getInstructionsStorage instead. */
+export const getTsgStorage = getInstructionsStorage;
 
 export { WorkItemStorage, TsgStorage };

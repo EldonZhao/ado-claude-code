@@ -11,7 +11,7 @@ import {
 } from "../services/planning/breakdown.js";
 import { getCodePlanGuidance } from "../services/planning/code-plan.js";
 import type { WorkItemStorage } from "../storage/workitems.js";
-import type { LocalWorkItemOutput } from "../schemas/work-item.schema.js";
+import type { LocalWorkItemOutput } from "../schemas/workitem.schema.js";
 
 /**
  * Save a work item to local storage AND register it in sync state,

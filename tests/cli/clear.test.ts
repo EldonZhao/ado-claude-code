@@ -14,7 +14,7 @@ vi.mock("../../src/storage/config.js", () => ({
       project: "proj",
       auth: { type: "pat", patEnvVar: "ADO_PAT" },
     },
-    storage: { basePath: "./.claude/ado", workItemsPath: "workitems", tsgPath: "tsgs" },
+    storage: { basePath: "./.github", workItemsPath: "workitems", instructionsPath: "instructions" },
     sync: { autoSync: false, pullOnStartup: true, conflictResolution: "ask" },
   }),
   resolveStoragePath: vi.fn((p: string) => p),

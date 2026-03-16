@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { LocalWorkItemOutput } from "../../src/schemas/work-item.schema.js";
+import type { LocalWorkItemOutput } from "../../src/schemas/workitem.schema.js";
 
 // ---------- Mocks ----------
 

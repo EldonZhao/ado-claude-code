@@ -47,7 +47,7 @@ export interface AdoConfig {
   storage: {
     basePath: string;
     workItemsPath: string;
-    tsgPath: string;
+    instructionsPath: string;
   };
   sync: {
     autoSync: boolean;

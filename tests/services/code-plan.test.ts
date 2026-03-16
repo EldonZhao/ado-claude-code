@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getCodePlanGuidance } from "../../src/services/planning/code-plan.js";
-import type { LocalWorkItemOutput } from "../../src/schemas/work-item.schema.js";
+import type { LocalWorkItemOutput } from "../../src/schemas/workitem.schema.js";
 
 function makeItem(
   overrides?: Partial<LocalWorkItemOutput>,

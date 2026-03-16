@@ -11,11 +11,23 @@ export const AzureDevOpsConfigSchema = z.object({
   auth: AuthConfigSchema,
 });
 
-export const StorageConfigSchema = z.object({
-  basePath: z.string().default("./.claude/ado"),
+const StorageConfigInner = z.object({
+  basePath: z.string().default("./.github"),
   workItemsPath: z.string().default("workitems"),
-  tsgPath: z.string().default("tsgs"),
+  instructionsPath: z.string().default("instructions"),
 });
+
+/** Backward compat: remap old `tsgPath` field to `instructionsPath` before parsing. */
+export const StorageConfigSchema = z.preprocess((input) => {
+  if (input && typeof input === "object" && !Array.isArray(input)) {
+    const obj = input as Record<string, unknown>;
+    if ("tsgPath" in obj && !("instructionsPath" in obj)) {
+      const { tsgPath, ...rest } = obj;
+      return { ...rest, instructionsPath: tsgPath };
+    }
+  }
+  return input;
+}, StorageConfigInner);
 
 export const SyncConfigSchema = z.object({
   autoSync: z.boolean().default(false),
@@ -32,9 +44,9 @@ export const AdoConfigSchema = z.object({
   version: z.string().default("1.0"),
   azure_devops: AzureDevOpsConfigSchema,
   storage: StorageConfigSchema.default({
-    basePath: "./.claude/ado",
+    basePath: "./.github",
     workItemsPath: "workitems",
-    tsgPath: "tsgs",
+    instructionsPath: "instructions",
   }),
   sync: SyncConfigSchema.default({
     autoSync: false,

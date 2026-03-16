@@ -4,7 +4,7 @@ import { SyncStateManager } from "../../src/services/sync/state.js";
 import type { AdoClient } from "../../src/services/ado/client.js";
 import type { WorkItemStorage } from "../../src/storage/workitems.js";
 import type { AdoWorkItem } from "../../src/services/ado/types.js";
-import type { LocalWorkItemOutput } from "../../src/schemas/work-item.schema.js";
+import type { LocalWorkItemOutput } from "../../src/schemas/workitem.schema.js";
 import type { SyncItemState } from "../../src/schemas/sync-state.schema.js";
 import { SyncError } from "../../src/utils/errors.js";
 

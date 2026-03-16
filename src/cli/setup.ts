@@ -5,6 +5,38 @@ import { saveConfig, loadConfig, clearConfigCache, resolveStoragePath, ensurePro
 import { getCredentials, clearTokenCache } from "../services/ado/auth.js";
 import { AdoConfigSchema, type AdoConfigOutput } from "../schemas/config.schema.js";
 
+export function parseAdoUrl(url: string): { organization: string; project?: string } {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return fatal(`Invalid URL: ${url}`) as never;
+  }
+
+  const segments = parsed.pathname.split("/").filter(Boolean);
+
+  // https://dev.azure.com/<org>[/<project>][/_git/...]
+  if (parsed.hostname === "dev.azure.com") {
+    if (segments.length === 0) return fatal(`No organization found in URL: ${url}`) as never;
+    return {
+      organization: `${parsed.origin}/${segments[0]}`,
+      project: segments.length > 1 ? segments[1] : undefined,
+    };
+  }
+
+  // https://<org>.visualstudio.com[/<project>][/_git/...]
+  if (parsed.hostname.endsWith(".visualstudio.com")) {
+    return {
+      organization: parsed.origin,
+      project: segments.length > 0 ? segments[0] : undefined,
+    };
+  }
+
+  return fatal(
+    `Unrecognized Azure DevOps URL format: ${url}. Expected dev.azure.com or *.visualstudio.com`,
+  ) as never;
+}
+
 export async function handleSetup(args: string[]): Promise<void> {
   const action = args[0];
   if (!action || !["init", "validate", "show", "login", "logout"].includes(action)) {
@@ -35,9 +67,21 @@ async function handleInit(args: string[]): Promise<void> {
     input = flags;
   }
 
+  // --url takes precedence: parse organization and project from the URL
+  if (input.url) {
+    const urls = input.url.split(",").map(u => u.trim()).filter(Boolean);
+    const { organization, project } = parseAdoUrl(urls[urls.length - 1]);
+    input.organization = organization;
+    if (project) input.project = project;
+  }
+
   if (!input.organization || !input.project) {
     fatal(
-      "Usage: setup init --organization=<url> --project=<name> [--authType=pat|azure-ad] [--storagePath=./.claude/ado]",
+      "Usage: setup init --url=<azure-devops-url>\n" +
+      "   or: setup init --organization=<url> --project=<name>\n" +
+      "Supported URL formats:\n" +
+      "  https://dev.azure.com/<org>/<project>\n" +
+      "  https://<org>.visualstudio.com/<project>",
     );
   }
 
@@ -52,9 +96,9 @@ async function handleInit(args: string[]): Promise<void> {
       },
     },
     storage: {
-      basePath: input.storagePath ?? "./.claude/ado",
+      basePath: input.storagePath ?? "./.github",
       workItemsPath: "workitems",
-      tsgPath: "tsgs",
+      instructionsPath: "instructions",
     },
     sync: {
       autoSync: false,
@@ -67,10 +111,10 @@ async function handleInit(args: string[]): Promise<void> {
   // Ensure data directories exist
   const basePath = resolveStoragePath(config.storage.basePath);
   const workItemsPath = path.resolve(basePath, config.storage.workItemsPath);
-  const tsgPath = path.resolve(basePath, config.storage.tsgPath);
+  const instructionsPath = path.resolve(basePath, config.storage.instructionsPath);
 
   await fs.mkdir(workItemsPath, { recursive: true });
-  await fs.mkdir(tsgPath, { recursive: true });
+  await fs.mkdir(instructionsPath, { recursive: true });
 
   for (const dir of ["epics", "features", "user-stories", "tasks", "bugs"]) {
     await fs.mkdir(path.join(workItemsPath, dir), { recursive: true });

@@ -51,9 +51,9 @@ function makeConfig(defaults?: AdoConfigOutput["defaults"]): AdoConfigOutput {
       auth: { type: "pat", patEnvVar: "ADO_PAT" },
     },
     storage: {
-      basePath: "./.claude/ado",
+      basePath: "./.github",
       workItemsPath: "workitems",
-      tsgPath: "tsgs",
+      instructionsPath: "instructions",
     },
     sync: {
       autoSync: false,

@@ -1,5 +1,5 @@
 import type { AdoWorkItem } from "../ado/types.js";
-import type { LocalWorkItemOutput } from "../../schemas/work-item.schema.js";
+import type { LocalWorkItemOutput } from "../../schemas/workitem.schema.js";
 import type { WorkItemType } from "../../types/index.js";
 import { stringify as stringifyYaml } from "yaml";
 

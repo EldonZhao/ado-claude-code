@@ -1,5 +1,5 @@
 import type { WorkItemType } from "../../types/index.js";
-import type { LocalWorkItemOutput } from "../../schemas/work-item.schema.js";
+import type { LocalWorkItemOutput } from "../../schemas/workitem.schema.js";
 import { HIERARCHY } from "./templates.js";
 import { logger } from "../../utils/logger.js";
 
@@ -128,7 +128,7 @@ export function getBreakdownGuidance(
       ? `Description:\n${parent.description}\n\n`
       : "\n") +
     `Guidelines for ${childType}:\n${guidelines[childType] ?? "Create appropriate child items."}\n\n` +
-    `Return your proposal by calling ado_work_items_workitem_plan with:\n` +
+    `Return your proposal by calling ado_workitems_workitem_plan with:\n` +
     `- id: ${parent.id}\n` +
     `- items: array of {title, description, priority?, storyPoints?}\n` +
     `- createInAdo: true (to create) or false (preview only)`

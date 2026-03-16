@@ -10,6 +10,7 @@ const mockStorage = {
 };
 
 vi.mock("../../src/storage/index.js", () => ({
+  getInstructionsStorage: async () => mockStorage,
   getTsgStorage: async () => mockStorage,
 }));
 

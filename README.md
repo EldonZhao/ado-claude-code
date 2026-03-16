@@ -67,8 +67,18 @@ This walks you through configuring your organization URL, project name, and auth
 ### 1. Initialize configuration
 
 ```
+/ado-claude-code:setup init --url="https://dev.azure.com/your-org/YourProject"
+```
+
+Or use the legacy flags:
+
+```
 /ado-claude-code:setup init --organization="https://dev.azure.com/your-org" --project="YourProject"
 ```
+
+Supported URL formats:
+- `https://dev.azure.com/<org>/<project>`
+- `https://<org>.visualstudio.com/<project>`
 
 ### 2. Login
 
@@ -93,6 +103,12 @@ export ADO_PAT="your-personal-access-token"
 ```
 
 ```
+/ado-claude-code:setup init --url="https://dev.azure.com/your-org/YourProject" --authType=pat
+```
+
+Or:
+
+```
 /ado-claude-code:setup init --organization="https://dev.azure.com/your-org" --project="YourProject" --authType=pat
 ```
 
@@ -108,7 +124,7 @@ export ADO_PAT="your-personal-access-token"
 | `/ado-claude-code:workitem-query` | Run WIQL queries or list local items |
 | `/ado-claude-code:workitem-create` | Create a new work item in Azure DevOps |
 | `/ado-claude-code:clear` | Clear all synced work items from local storage |
-| `/ado-claude-code:tsg` | Create, manage, and troubleshoot with TSGs |
+| `/ado-claude-code:instructions` | Create, manage, and troubleshoot with TSGs |
 | `/ado-claude-code:setup` | Initialize, validate, login/logout, or show configuration |
 | `/ado-claude-code:summary` | Summarize Azure DevOps progress over a time period (week/month) |
 
@@ -155,7 +171,7 @@ Configuration is stored in `.claude/.ado-config.yaml`. For PAT auth, set `ADO_PA
 /ado-claude-code:sync full --mine            # Full sync for your active items
 ```
 
-Synced items are stored as YAML in `.claude/ado/workitems/` organized by type. Use `/ado-claude-code:clear --confirm` to remove all synced items and reset sync state.
+Synced items are stored as YAML in `.github/workitems/` organized by type. Use `/ado-claude-code:clear --confirm` to remove all synced items and reset sync state.
 
 ### Work Items
 
@@ -204,26 +220,26 @@ Fetches the work item and returns structured guidance including files to analyze
 
 Queries Azure DevOps for recently changed work items, groups them by parent Feature, and classifies them into Completed, In Progress, Blocked/Bugs, and New. Returns structured JSON that Claude interprets into a human-readable progress summary.
 
-### TSG
+### Instructions
 
 ```
-/ado-claude-code:tsg create --title="Pod OOM" --category=deployment
-/ado-claude-code:tsg create --title="Pod OOM" --category=deployment --template
-/ado-claude-code:tsg create --file=./existing-tsg.md
-/ado-claude-code:tsg list [--category=deployment]
-/ado-claude-code:tsg get <tsg-id>
-/ado-claude-code:tsg update <tsg-id> --title="..." --tags='[...]'
-/ado-claude-code:tsg search --query="pod restarting" --symptoms='["OOMKilled"]'
-/ado-claude-code:tsg score <tsg-id>   # Evaluate TSG completeness (0–125)
+/ado-claude-code:instructions create --title="Pod OOM" --category=deployment
+/ado-claude-code:instructions create --title="Pod OOM" --category=deployment --template
+/ado-claude-code:instructions create --file=./existing-tsg.md
+/ado-claude-code:instructions list [--category=deployment]
+/ado-claude-code:instructions get <tsg-id>
+/ado-claude-code:instructions update <tsg-id> --title="..." --tags='[...]'
+/ado-claude-code:instructions search --query="pod restarting" --symptoms='["OOMKilled"]'
+/ado-claude-code:instructions score <tsg-id>   # Evaluate TSG completeness (0–125)
 ```
 
 **Troubleshooting workflow:**
 
 ```
-/ado-claude-code:tsg diagnose --symptoms='["pod restarting","OOMKilled"]'
-/ado-claude-code:tsg analyze --output="<diagnostic output>" --tsgId=<id>
-/ado-claude-code:tsg suggest --tsgId=<id> --rootCause=oom
-/ado-claude-code:tsg run --symptoms='["pod restarting"]' --category=deployment
+/ado-claude-code:instructions diagnose --symptoms='["pod restarting","OOMKilled"]'
+/ado-claude-code:instructions analyze --output="<diagnostic output>" --tsgId=<id>
+/ado-claude-code:instructions suggest --tsgId=<id> --rootCause=oom
+/ado-claude-code:instructions run --symptoms='["pod restarting"]' --category=deployment
 ```
 
 The `run` action chains diagnose → diagnostics → analyze → suggest in a single command.
@@ -245,7 +261,7 @@ src/
   cli/
     workitems.ts        Work item handlers
     sync.ts             Sync handlers
-    tsg.ts              TSG handlers (create, manage, and troubleshoot)
+    instructions.ts     TSG handlers (create, manage, and troubleshoot)
     setup.ts            Setup handlers
     troubleshoot.ts     Troubleshooting handlers (diagnose, analyze, suggest, run)
     helpers.ts          Shared CLI utilities
@@ -263,9 +279,9 @@ commands/               Slash commands (9)
 agents/                 Specialist subagents (2)
 rules/                  Always-active conventions
 
-.claude/ado/
+.github/
   workitems/            Synced work items (YAML), organized by type
-  tsgs/                 Troubleshooting guides (YAML)
+  instructions/         Troubleshooting guides (YAML)
   .ado-sync/            Sync state tracking
 ```
 

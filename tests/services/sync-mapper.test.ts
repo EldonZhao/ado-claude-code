@@ -6,7 +6,7 @@ import {
   toWebUrl,
 } from "../../src/services/sync/mapper.js";
 import type { AdoWorkItem } from "../../src/services/ado/types.js";
-import type { LocalWorkItemOutput } from "../../src/schemas/work-item.schema.js";
+import type { LocalWorkItemOutput } from "../../src/schemas/workitem.schema.js";
 
 function makeAdoItem(overrides?: Partial<AdoWorkItem>): AdoWorkItem {
   return {
