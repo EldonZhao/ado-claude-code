@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import type { AdoClient } from "../ado/client.js";
 import type { AdoWorkItem } from "../ado/types.js";
-import type { WorkItemStorage } from "../../storage/work-items.js";
+import type { WorkItemStorage } from "../../storage/workitems.js";
 import type { LocalWorkItemOutput } from "../../schemas/work-item.schema.js";
 import type { SyncItemState } from "../../schemas/sync-state.schema.js";
 import { SyncStateManager } from "./state.js";

@@ -75,7 +75,7 @@ vi.mock("../../src/services/planning/breakdown.js", () => ({
   getBreakdownGuidance: (...args: unknown[]) => mockGetBreakdownGuidance(...args),
 }));
 
-import { handleWorkItems } from "../../src/cli/work-items.js";
+import { handleWorkItems } from "../../src/cli/workitems.js";
 
 // ---------- Helpers ----------
 
@@ -94,7 +94,7 @@ function makeItem(overrides?: Partial<LocalWorkItemOutput>): LocalWorkItemOutput
 
 // ---------- Tests ----------
 
-describe("handleWorkitemPlan (work-items workitem-plan)", () => {
+describe("handleWorkitemPlan (workitems workitem-plan)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -130,7 +130,7 @@ describe("handleWorkitemPlan (work-items workitem-plan)", () => {
 
   it("fatals when no ID provided", async () => {
     await expect(handleWorkItems(["workitem-plan"])).rejects.toThrow(
-      "Usage: work-items workitem-plan",
+      "Usage: workitems workitem-plan",
     );
   });
 

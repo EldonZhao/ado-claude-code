@@ -26,7 +26,7 @@ describe("ensureProjectGitignore", () => {
     expect(content).toContain("# ADO plugin");
     expect(content).toContain(".claude/.ado-config.yaml");
     expect(content).toContain(".claude/.ado-token-cache.json");
-    expect(content).toContain(".claude/ado/work-items/");
+    expect(content).toContain(".claude/ado/workitems/");
     expect(content).toContain(".claude/ado/.ado-sync/");
   });
 
@@ -54,7 +54,7 @@ describe("ensureProjectGitignore", () => {
     const content = await fs.readFile(path.join(tmpDir, ".gitignore"), "utf-8");
     expect(content).toContain("node_modules/");
     expect(content).toContain(".env");
-    expect(content).toContain(".claude/ado/work-items/");
+    expect(content).toContain(".claude/ado/workitems/");
     expect(content).toContain("# ADO plugin");
   });
 
@@ -87,7 +87,7 @@ describe("ensureProjectGitignore", () => {
     const content = await fs.readFile(path.join(tmpDir, ".gitignore"), "utf-8");
     // Should add a newline before our entries
     expect(content).toMatch(/node_modules\/\n/);
-    expect(content).toContain(".claude/ado/work-items/");
+    expect(content).toContain(".claude/ado/workitems/");
   });
 
   it("only adds missing entries when some already exist", async () => {
@@ -102,7 +102,7 @@ describe("ensureProjectGitignore", () => {
     expect(configMatches).toHaveLength(1);
     // Should add the missing ones
     expect(content).toContain(".claude/.ado-token-cache.json");
-    expect(content).toContain(".claude/ado/work-items/");
+    expect(content).toContain(".claude/ado/workitems/");
     expect(content).toContain(".claude/ado/.ado-sync/");
   });
 });

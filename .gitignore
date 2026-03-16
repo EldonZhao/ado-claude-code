@@ -19,7 +19,7 @@ nul
 # ADO config, token cache, and synced work items
 .claude/.ado-config.yaml
 .claude/.ado-token-cache.json
-.claude/ado/work-items/
+.claude/ado/workitems/
 .claude/ado/.ado-sync/
 
 # Coverage

@@ -68,7 +68,7 @@ vi.mock("../../src/services/planning/breakdown.js", () => ({
   getBreakdownGuidance: vi.fn(),
 }));
 
-import { handleWorkItems } from "../../src/cli/work-items.js";
+import { handleWorkItems } from "../../src/cli/workitems.js";
 
 // ---------- Helpers ----------
 
@@ -100,7 +100,7 @@ function makeAdoWorkItem(id: number, fields: Record<string, unknown>) {
 
 // ---------- Tests ----------
 
-describe("handleSummary (work-items summary)", () => {
+describe("handleSummary (workitems summary)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetLatestComment.mockResolvedValue(undefined);

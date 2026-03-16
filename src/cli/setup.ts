@@ -53,7 +53,7 @@ async function handleInit(args: string[]): Promise<void> {
     },
     storage: {
       basePath: input.storagePath ?? "./.claude/ado",
-      workItemsPath: "work-items",
+      workItemsPath: "workitems",
       tsgPath: "tsgs",
     },
     sync: {

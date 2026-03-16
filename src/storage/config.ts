@@ -98,13 +98,13 @@ const GITIGNORE_ENTRIES = [
   "# ADO plugin — local-only files (do not commit)",
   ".claude/.ado-config.yaml",
   ".claude/.ado-token-cache.json",
-  ".claude/ado/work-items/",
+  ".claude/ado/workitems/",
   ".claude/ado/.ado-sync/",
 ];
 
 /**
  * Ensure the tsgs directory exists and the project .gitignore has entries
- * to exclude local-only ADO files (work-items, sync state, config, token cache).
+ * to exclude local-only ADO files (workitems, sync state, config, token cache).
  * TSGs are intentionally NOT excluded — they should be tracked in git.
  */
 export async function ensureProjectGitignore(basePath?: string): Promise<void> {

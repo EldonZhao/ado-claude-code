@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { loadConfig, resolveStoragePath } from "./config.js";
-import { WorkItemStorage } from "./work-items.js";
+import { WorkItemStorage } from "./workitems.js";
 import { TsgStorage } from "./tsg.js";
 import type { AdoConfigOutput } from "../schemas/config.schema.js";
 

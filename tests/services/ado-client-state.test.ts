@@ -52,7 +52,7 @@ function makeConfig(): AdoConfigOutput {
     },
     storage: {
       basePath: "./.claude/ado",
-      workItemsPath: "work-items",
+      workItemsPath: "workitems",
       tsgPath: "tsgs",
     },
     sync: {

@@ -1,14 +1,14 @@
 import * as path from "node:path";
 import { output, parseFlags } from "./helpers.js";
 import { loadConfig, resolveStoragePath, getProjectRoot } from "../storage/config.js";
-import { WorkItemStorage } from "../storage/work-items.js";
+import { WorkItemStorage } from "../storage/workitems.js";
 import { SyncStateManager } from "../services/sync/state.js";
 import { SyncEngine } from "../services/sync/engine.js";
 import { logger } from "../utils/logger.js";
 
 // Default storage layout matching config schema defaults
 const DEFAULT_BASE_PATH = "./.claude/ado";
-const DEFAULT_WORK_ITEMS_PATH = "work-items";
+const DEFAULT_WORK_ITEMS_PATH = "workitems";
 
 export async function handleClear(args: string[]): Promise<void> {
   const flags = parseFlags(args);

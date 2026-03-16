@@ -30,35 +30,35 @@ Query work items from Azure DevOps or list locally synced items.
 ## Query from ADO (WIQL)
 
 ```bash
-node dist/cli.js work-items query --project-dir=/path/to/project "SELECT [System.Id], [System.Title] FROM WorkItems WHERE [System.State] = 'Active'"
+node dist/cli.js workitems query --project-dir=/path/to/project "SELECT [System.Id], [System.Title] FROM WorkItems WHERE [System.State] = 'Active'"
 ```
 
 Save query results locally:
 ```bash
-node dist/cli.js work-items query "SELECT ..." --save
+node dist/cli.js workitems query "SELECT ..." --save
 ```
 
 ## List local items
 
 ```bash
-node dist/cli.js work-items list
-node dist/cli.js work-items list --type="User Story" --state=Active
-node dist/cli.js work-items list --assignedTo="user@example.com"
+node dist/cli.js workitems list
+node dist/cli.js workitems list --type="User Story" --state=Active
+node dist/cli.js workitems list --assignedTo="user@example.com"
 ```
 
 ## Other work item commands
 
 Get a specific work item:
 ```bash
-node dist/cli.js work-items get 1234
+node dist/cli.js workitems get 1234
 ```
 
 Create a work item:
 ```bash
-node dist/cli.js work-items create --type=Task --title="Fix the bug" --priority=1
+node dist/cli.js workitems create --type=Task --title="Fix the bug" --priority=1
 ```
 
 Update a work item:
 ```bash
-node dist/cli.js work-items update 1234 --state=Active --priority=2
+node dist/cli.js workitems update 1234 --state=Active --priority=2
 ```

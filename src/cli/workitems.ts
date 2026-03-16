@@ -10,7 +10,7 @@ import {
   type PlannedItem,
 } from "../services/planning/breakdown.js";
 import { getCodePlanGuidance } from "../services/planning/code-plan.js";
-import type { WorkItemStorage } from "../storage/work-items.js";
+import type { WorkItemStorage } from "../storage/workitems.js";
 import type { LocalWorkItemOutput } from "../schemas/work-item.schema.js";
 
 /**
@@ -42,7 +42,7 @@ async function saveAndTrack(
 export async function handleWorkItems(args: string[]): Promise<void> {
   const action = args[0];
   if (!action) {
-    fatal("Usage: work-items <get|list|create|update|query|plan|workitem-plan|summary> [args]");
+    fatal("Usage: workitems <get|list|create|update|query|plan|workitem-plan|summary> [args]");
   }
 
   switch (action) {
@@ -64,14 +64,14 @@ export async function handleWorkItems(args: string[]): Promise<void> {
     case "summary":
       return handleSummary(args.slice(1));
     default:
-      fatal(`Unknown work-items action: ${action}. Use get|list|create|update|query|plan|workitem-plan|summary`);
+      fatal(`Unknown workitems action: ${action}. Use get|list|create|update|query|plan|workitem-plan|summary`);
   }
 }
 
 async function handleGet(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
-  if (!idStr) fatal("Usage: work-items get <id> [--expand=all|relations|fields] [--no-save]");
+  if (!idStr) fatal("Usage: workitems get <id> [--expand=all|relations|fields] [--no-save]");
 
   const id = parseInt(idStr, 10);
   if (isNaN(id)) fatal(`Invalid work item ID: ${idStr}`);
@@ -122,7 +122,7 @@ async function handleCreate(args: string[]): Promise<void> {
   }
 
   if (!flags.type || !flags.title) {
-    fatal("Usage: work-items create --type=<type> --title=<title> [--description=...] [--assignedTo=...] [--priority=N]");
+    fatal("Usage: workitems create --type=<type> --title=<title> [--description=...] [--assignedTo=...] [--priority=N]");
   }
 
   const client = await getAdoClient();
@@ -148,7 +148,7 @@ async function handleCreate(args: string[]): Promise<void> {
 async function handleUpdate(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
-  if (!idStr) fatal("Usage: work-items update <id> [--title=...] [--state=...] [--priority=N] [--comment=...] [--complete]");
+  if (!idStr) fatal("Usage: workitems update <id> [--title=...] [--state=...] [--priority=N] [--comment=...] [--complete]");
 
   const id = parseInt(idStr, 10);
   if (isNaN(id)) fatal(`Invalid work item ID: ${idStr}`);
@@ -252,7 +252,7 @@ async function handleQuery(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   // The WIQL can be a positional arg (quoted) or --wiql flag
   const wiql = args.find((a) => !a.startsWith("--")) ?? flags.wiql;
-  if (!wiql) fatal("Usage: work-items query <wiql> [--save]");
+  if (!wiql) fatal("Usage: workitems query <wiql> [--save]");
 
   const client = await getAdoClient();
   const adoItems = await client.queryWorkItems(wiql);
@@ -287,7 +287,7 @@ function getBugCompletionFields(type: string): Record<string, unknown> | undefin
 async function handlePlan(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
-  if (!idStr) fatal("Usage: work-items plan <id> [--no-update]");
+  if (!idStr) fatal("Usage: workitems plan <id> [--no-update]");
 
   const id = parseInt(idStr, 10);
   if (isNaN(id)) fatal(`Invalid work item ID: ${idStr}`);
@@ -388,7 +388,7 @@ async function handlePlan(args: string[]): Promise<void> {
 async function handleWorkitemPlan(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
-  if (!idStr) fatal("Usage: work-items workitem-plan <id> [--items=<json>] [--create] [--complete] [--no-update]");
+  if (!idStr) fatal("Usage: workitems workitem-plan <id> [--items=<json>] [--create] [--complete] [--no-update]");
 
   const id = parseInt(idStr, 10);
   if (isNaN(id)) fatal(`Invalid work item ID: ${idStr}`);

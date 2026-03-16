@@ -21,7 +21,7 @@ Generate a human-readable summary of Azure DevOps work item activity over a time
 ## Usage
 
 ```bash
-node dist/cli.js work-items summary --project-dir=/path/to/project [--period=week|month] [--assignedTo=user@example.com] [--query="WIQL override"]
+node dist/cli.js workitems summary --project-dir=/path/to/project [--period=week|month] [--assignedTo=user@example.com] [--query="WIQL override"]
 ```
 
 ## Flags
@@ -70,5 +70,5 @@ Use bullet points, group items under their parent Feature when available, and ke
 ## Example
 
 ```bash
-node dist/cli.js work-items summary --project-dir=/home/user/myproject --period=week
+node dist/cli.js workitems summary --project-dir=/home/user/myproject --period=week
 ```

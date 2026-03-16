@@ -155,7 +155,7 @@ Configuration is stored in `.claude/.ado-config.yaml`. For PAT auth, set `ADO_PA
 /ado-claude-code:sync full --mine            # Full sync for your active items
 ```
 
-Synced items are stored as YAML in `.claude/ado/work-items/` organized by type. Use `/ado-claude-code:clear --confirm` to remove all synced items and reset sync state.
+Synced items are stored as YAML in `.claude/ado/workitems/` organized by type. Use `/ado-claude-code:clear --confirm` to remove all synced items and reset sync state.
 
 ### Work Items
 
@@ -243,7 +243,7 @@ npm run build    # Production build
 src/
   cli.ts                CLI entry point (arg parsing + routing)
   cli/
-    work-items.ts       Work item handlers
+    workitems.ts        Work item handlers
     sync.ts             Sync handlers
     tsg.ts              TSG handlers (create, manage, and troubleshoot)
     setup.ts            Setup handlers
@@ -254,7 +254,7 @@ src/
     sync/               Sync engine, mapper, state
     tsg/                TSG search, executor
     planning/           Work item breakdown, code plan
-  storage/              Config, work-items, TSG, cache (YAML I/O)
+  storage/              Config, workitems, TSG, cache (YAML I/O)
   schemas/              Zod validation schemas
   utils/                Logger, error classes
 
@@ -264,7 +264,7 @@ agents/                 Specialist subagents (2)
 rules/                  Always-active conventions
 
 .claude/ado/
-  work-items/           Synced work items (YAML), organized by type
+  workitems/            Synced work items (YAML), organized by type
   tsgs/                 Troubleshooting guides (YAML)
   .ado-sync/            Sync state tracking
 ```

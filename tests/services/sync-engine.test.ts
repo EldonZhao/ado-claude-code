@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SyncEngine } from "../../src/services/sync/engine.js";
 import { SyncStateManager } from "../../src/services/sync/state.js";
 import type { AdoClient } from "../../src/services/ado/client.js";
-import type { WorkItemStorage } from "../../src/storage/work-items.js";
+import type { WorkItemStorage } from "../../src/storage/workitems.js";
 import type { AdoWorkItem } from "../../src/services/ado/types.js";
 import type { LocalWorkItemOutput } from "../../src/schemas/work-item.schema.js";
 import type { SyncItemState } from "../../src/schemas/sync-state.schema.js";

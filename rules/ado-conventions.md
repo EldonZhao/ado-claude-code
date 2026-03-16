@@ -19,11 +19,11 @@ node "<installPath>/dist/cli.js" <domain> <action> --project-dir=<user's project
 
 **CRITICAL:** Always pass `--project-dir=<path>` pointing to the user's current project working directory. Without it, data will be stored in the wrong location when the plugin is installed via marketplace. Use the user's project root (where `.claude/` lives or should live).
 
-Domains: `work-items`, `sync`, `tsg` (includes `ts` subcommand for troubleshooting), `setup`
+Domains: `workitems`, `sync`, `tsg` (includes `ts` subcommand for troubleshooting), `setup`
 
 ## Work Item YAML Format
 
-Local work items are stored in `.claude/ado/work-items/<type>/<id>.yaml`:
+Local work items are stored in `.claude/ado/workitems/<type>/<id>.yaml`:
 
 ```yaml
 id: 1234

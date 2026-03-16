@@ -92,4 +92,4 @@ Full sync with custom query:
 node dist/cli.js sync full --query="SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = @project"
 ```
 
-After syncing, work items are stored as YAML files in `.claude/ado/work-items/` organized by type (epics, features, user-stories, tasks, bugs).
+After syncing, work items are stored as YAML files in `.claude/ado/workitems/` organized by type (epics, features, user-stories, tasks, bugs).

@@ -173,7 +173,7 @@ When generating a title or description from a `summary`, apply the type-specific
 ## Usage
 
 ```bash
-node dist/cli.js work-items create --project-dir=/path/to/project --type=<type> --title=<title> [flags]
+node dist/cli.js workitems create --project-dir=/path/to/project --type=<type> --title=<title> [flags]
 ```
 
 ## Flags
@@ -221,40 +221,40 @@ Claude refines and presents for confirmation:
 
 After user confirms, Claude runs:
 ```bash
-node dist/cli.js work-items create --type=Bug --title="[Auth] Login returns 500 when password field is empty" --description="<h3>Repro Steps</h3><ol><li>Navigate to login page</li>..." --priority=1
+node dist/cli.js workitems create --type=Bug --title="[Auth] Login returns 500 when password field is empty" --description="<h3>Repro Steps</h3><ol><li>Navigate to login page</li>..." --priority=1
 ```
 
 ### Explicit title (pass-through)
 
 ```bash
-node dist/cli.js work-items create --type=Task --title="Add password reset endpoint" --priority=2
+node dist/cli.js workitems create --type=Task --title="Add password reset endpoint" --priority=2
 ```
 
 ### Assigned User Story
 
 ```bash
-node dist/cli.js work-items create --type="User Story" --title="As a user, I want to reset my password" --assignedTo="user@example.com"
+node dist/cli.js workitems create --type="User Story" --title="As a user, I want to reset my password" --assignedTo="user@example.com"
 ```
 
 ### Child Task under parent
 
 ```bash
-node dist/cli.js work-items create --type=Task --title="Add password reset endpoint" --parentId=1234
+node dist/cli.js workitems create --type=Task --title="Add password reset endpoint" --parentId=1234
 ```
 
 ### Custom fields
 
 ```bash
-node dist/cli.js work-items create --type=Bug --title="Critical crash" --priority=1 --customFields='{"Custom.ProductImpact":"1 - Critical"}'
+node dist/cli.js workitems create --type=Bug --title="Critical crash" --priority=1 --customFields='{"Custom.ProductImpact":"1 - Critical"}'
 ```
 
 ### Full JSON input
 
 ```bash
-node dist/cli.js work-items create --json='{"type":"Feature","title":"Dark mode","description":"Add dark mode support","priority":3}'
+node dist/cli.js workitems create --json='{"type":"Feature","title":"Dark mode","description":"Add dark mode support","priority":3}'
 ```
 
-The created work item is saved locally to `.claude/ado/work-items/` as a YAML file.
+The created work item is saved locally to `.claude/ado/workitems/` as a YAML file.
 
 ## Type Defaults
 

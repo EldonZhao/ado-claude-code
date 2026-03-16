@@ -20,7 +20,7 @@
     "claude-code",
     "plugin",
     "azure-devops",
-    "work-items",
+    "workitems",
     "tsg"
   ],
   "license": "MIT",

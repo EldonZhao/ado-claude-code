@@ -1,6 +1,6 @@
 import { logger } from "./utils/logger.js";
 import { formatError } from "./utils/errors.js";
-import { handleWorkItems } from "./cli/work-items.js";
+import { handleWorkItems } from "./cli/workitems.js";
 import { handleSync } from "./cli/sync.js";
 import { handleTsg } from "./cli/tsg.js";
 import { handleSetup } from "./cli/setup.js";
@@ -16,7 +16,7 @@ Global flags:
   --project-dir=<path>   Project root directory (where .claude/ lives)
 
 Domains:
-  work-items   get|list|create|update|query|plan|workitem-plan|summary
+  workitems    get|list|create|update|query|plan|workitem-plan|summary
   sync         pull|push|full
   clear        [--confirm]
   tsg          create|get|update|list|search|execute|score|ts
@@ -25,7 +25,7 @@ Domains:
 Examples:
   ado-claude-code setup init --organization=https://dev.azure.com/myorg --project=MyProject
   ado-claude-code sync pull --query="SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'Active'"
-  ado-claude-code work-items get 1234
+  ado-claude-code workitems get 1234
   ado-claude-code tsg list --category=deployment
   ado-claude-code tsg ts diagnose --symptoms='["pod restarting"]'
 `;
@@ -58,7 +58,7 @@ async function main(): Promise<void> {
 
   try {
     switch (domain) {
-      case "work-items":
+      case "workitems":
         await handleWorkItems(rest);
         break;
       case "sync":

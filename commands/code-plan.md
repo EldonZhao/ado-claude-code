@@ -18,7 +18,7 @@ Generate a code implementation plan from any Azure DevOps work item. Works for a
 ## Usage
 
 ```bash
-node dist/cli.js work-items plan --project-dir=/path/to/project <id> [--no-update]
+node dist/cli.js workitems plan --project-dir=/path/to/project <id> [--no-update]
 ```
 
 ## Flags
@@ -53,14 +53,14 @@ During implementation, post progress updates to the work item using comments. Th
 
 ### How to Update
 
-Use `work-items update <id> --comment="<html>"` with structured HTML:
+Use `workitems update <id> --comment="<html>"` with structured HTML:
 
 ```bash
 # Mid-session progress update
-node dist/cli.js work-items update --project-dir=/path/to/project <id> --comment="<h4>Progress Update</h4><p><em>2026-03-11T10:00:00Z</em></p><ul><li>Modified <code>src/foo.ts</code> — added validation logic</li><li>Updated <code>tests/foo.test.ts</code> — 3 new test cases</li></ul><p><strong>Next:</strong> Integration testing</p>"
+node dist/cli.js workitems update --project-dir=/path/to/project <id> --comment="<h4>Progress Update</h4><p><em>2026-03-11T10:00:00Z</em></p><ul><li>Modified <code>src/foo.ts</code> — added validation logic</li><li>Updated <code>tests/foo.test.ts</code> — 3 new test cases</li></ul><p><strong>Next:</strong> Integration testing</p>"
 
 # Final completion with summary
-node dist/cli.js work-items update --project-dir=/path/to/project <id> --complete --comment="<h4>Implementation Complete</h4><ul><li>Added bidirectional sync in <code>handlePlan</code></li><li>Fixed <code>--complete --comment</code> merge</li><li>All tests passing (12 new tests)</li></ul>"
+node dist/cli.js workitems update --project-dir=/path/to/project <id> --complete --comment="<h4>Implementation Complete</h4><ul><li>Added bidirectional sync in <code>handlePlan</code></li><li>Fixed <code>--complete --comment</code> merge</li><li>All tests passing (12 new tests)</li></ul>"
 ```
 
 ### Example Lifecycle
@@ -68,10 +68,10 @@ node dist/cli.js work-items update --project-dir=/path/to/project <id> --complet
 ```
 1. /code-plan 12345              → Fetches item, pushes local edits, generates plan, posts initial comment
 2. (Claude implements step 1)
-3. work-items update 12345 --comment="<h4>Progress Update</h4>..."   → Posts mid-session update
+3. workitems update 12345 --comment="<h4>Progress Update</h4>..."   → Posts mid-session update
 4. (Claude implements step 2)
-5. work-items update 12345 --comment="<h4>Progress Update</h4>..."   → Posts another update
-6. work-items update 12345 --complete --comment="<h4>Implementation Complete</h4>..."  → Marks done with summary
+5. workitems update 12345 --comment="<h4>Progress Update</h4>..."   → Posts another update
+6. workitems update 12345 --complete --comment="<h4>Implementation Complete</h4>..."  → Marks done with summary
 ```
 
 This fetches the work item and returns structured guidance for Claude to analyze the codebase and produce an implementation plan including:
@@ -86,7 +86,7 @@ This fetches the work item and returns structured guidance for Claude to analyze
 ## Example
 
 ```bash
-node dist/cli.js work-items plan 415156
+node dist/cli.js workitems plan 415156
 ```
 
 ## See Also

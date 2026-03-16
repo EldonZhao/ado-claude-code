@@ -14,7 +14,7 @@ vi.mock("../../src/storage/config.js", () => ({
       project: "proj",
       auth: { type: "pat", patEnvVar: "ADO_PAT" },
     },
-    storage: { basePath: "./.claude/ado", workItemsPath: "work-items", tsgPath: "tsgs" },
+    storage: { basePath: "./.claude/ado", workItemsPath: "workitems", tsgPath: "tsgs" },
     sync: { autoSync: false, pullOnStartup: true, conflictResolution: "ask" },
   }),
   resolveStoragePath: vi.fn((p: string) => p),
@@ -40,7 +40,7 @@ vi.mock("../../src/cli/helpers.js", () => ({
   }),
 }));
 
-vi.mock("../../src/storage/work-items.js", () => ({
+vi.mock("../../src/storage/workitems.js", () => ({
   WorkItemStorage: vi.fn(),
 }));
 

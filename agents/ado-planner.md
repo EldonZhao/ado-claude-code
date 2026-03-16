@@ -30,12 +30,12 @@ You help users decompose large work items (Epics, Features, User Stories) into w
 
 1. **Fetch the parent work item** to understand its scope:
    ```bash
-   node dist/cli.js work-items get <id>
+   node dist/cli.js workitems get <id>
    ```
 
 2. **Get breakdown guidance** for the work item type:
    ```bash
-   node dist/cli.js work-items workitem-plan <id>
+   node dist/cli.js workitems workitem-plan <id>
    ```
 
 3. **Analyze** the parent's title, description, and any existing children.
@@ -47,12 +47,12 @@ You help users decompose large work items (Epics, Features, User Stories) into w
 
 5. **Preview** the proposal:
    ```bash
-   node dist/cli.js work-items workitem-plan <id> --items='[...]'
+   node dist/cli.js workitems workitem-plan <id> --items='[...]'
    ```
 
 6. **Create** after user approval:
    ```bash
-   node dist/cli.js work-items workitem-plan <id> --items='[...]' --create
+   node dist/cli.js workitems workitem-plan <id> --items='[...]' --create
    ```
 
 ## Guidelines

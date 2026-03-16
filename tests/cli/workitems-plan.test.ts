@@ -93,7 +93,7 @@ vi.mock("../../src/services/planning/breakdown.js", () => ({
   getBreakdownGuidance: vi.fn(),
 }));
 
-import { handleWorkItems } from "../../src/cli/work-items.js";
+import { handleWorkItems } from "../../src/cli/workitems.js";
 import { SyncStateManager } from "../../src/services/sync/state.js";
 import { localToAdoPatch } from "../../src/services/sync/mapper.js";
 
@@ -114,7 +114,7 @@ function makeAdoItem(overrides?: Partial<LocalWorkItemOutput>): LocalWorkItemOut
 
 // ---------- Tests ----------
 
-describe("handlePlan (work-items plan) state and comment updates", () => {
+describe("handlePlan (workitems plan) state and comment updates", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetLatestComment.mockResolvedValue(undefined);

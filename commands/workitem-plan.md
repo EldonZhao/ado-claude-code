@@ -32,7 +32,7 @@ AI-assisted breakdown of work items following the ADO hierarchy: Epic -> Feature
 ### Step 1: Get guidance for breaking down a work item
 
 ```bash
-node dist/cli.js work-items workitem-plan --project-dir=/path/to/project 1234
+node dist/cli.js workitems workitem-plan --project-dir=/path/to/project 1234
 ```
 
 This fetches the parent work item and returns guidance on how to break it down.
@@ -40,13 +40,13 @@ This fetches the parent work item and returns guidance on how to break it down.
 ### Step 2: Preview a breakdown proposal
 
 ```bash
-node dist/cli.js work-items workitem-plan 1234 --items='[{"type":"User Story","title":"As a user, I want...","description":"...","priority":2}]'
+node dist/cli.js workitems workitem-plan 1234 --items='[{"type":"User Story","title":"As a user, I want...","description":"...","priority":2}]'
 ```
 
 ### Step 3: Create the items in ADO
 
 ```bash
-node dist/cli.js work-items workitem-plan 1234 --items='[...]' --create
+node dist/cli.js workitems workitem-plan 1234 --items='[...]' --create
 ```
 
 ## Hierarchy
