@@ -23,16 +23,17 @@ node dist/cli.js workitems plan --project-dir=/path/to/project <id> [--no-update
 
 ## Flags
 
-- `--no-update` — Skip automatic state transition and comment. Only generates the code plan.
+- `--no-update` — Skip automatic state transition. Only generates the code plan.
 
 ## Side Effects
 
 When invoked without `--no-update`, this command will:
 
 1. **Set state to "In Progress"** — If the work item is in "New", "To Do", "Proposed", or "Approved" state.
-2. **Add a comment** — Posts the full code plan guidance text (including work item context, description, and implementation instructions) to the work item.
 
-Both updates are non-blocking: if either fails, the code plan is still returned.
+The state update is non-blocking: if it fails, the code plan is still returned.
+
+**Note:** This command does NOT auto-post a comment. After Claude generates the actual implementation plan, post it to the work item using `workitems update <id> --comment="<html>"`.
 
 ## Bidirectional Sync
 
@@ -66,12 +67,14 @@ node dist/cli.js workitems update --project-dir=/path/to/project <id> --complete
 ### Example Lifecycle
 
 ```
-1. /code-plan 12345              → Fetches item, pushes local edits, generates plan, posts initial comment
-2. (Claude implements step 1)
-3. workitems update 12345 --comment="<h4>Progress Update</h4>..."   → Posts mid-session update
-4. (Claude implements step 2)
-5. workitems update 12345 --comment="<h4>Progress Update</h4>..."   → Posts another update
-6. workitems update 12345 --complete --comment="<h4>Implementation Complete</h4>..."  → Marks done with summary
+1. /code-plan 12345              → Fetches item, pushes local edits, generates plan guidance, transitions to In Progress
+2. (Claude analyzes codebase and produces implementation plan)
+3. workitems update 12345 --comment="<h3>Implementation Plan</h3>..."   → Posts the actual plan
+4. (Claude implements step 1)
+5. workitems update 12345 --comment="<h4>Progress Update</h4>..."   → Posts mid-session update
+6. (Claude implements step 2)
+7. workitems update 12345 --comment="<h4>Progress Update</h4>..."   → Posts another update
+8. workitems update 12345 --complete --comment="<h4>Implementation Complete</h4>..."  → Marks done with summary
 ```
 
 This fetches the work item and returns structured guidance for Claude to analyze the codebase and produce an implementation plan including:
@@ -92,3 +95,34 @@ node dist/cli.js workitems plan 415156
 ## See Also
 
 Use `/workitem-plan` to break down a work item into child items following the ADO hierarchy (Epic → Feature → User Story → Task → Task).
+
+## Multi-Repo Support
+
+When `repos` is configured in `.claude/.ado-config.yaml`, the code plan automatically detects which configured repos are referenced in the work item's description or latest comment and generates per-repo guidance.
+
+### Configuration
+
+Add a `repos` section to `.claude/.ado-config.yaml`:
+
+```yaml
+repos:
+  frontend:
+    path: C:\Users\me\projects\frontend
+  backend:
+    path: C:\Users\me\projects\backend
+  shared-lib:
+    path: C:\Users\me\projects\shared-lib
+```
+
+### Detection
+
+Repos are detected from the work item text using two patterns:
+
+1. **Structured lists** — `- backend: Add auth middleware` or `- **backend**: Add auth middleware`
+2. **Freeform mentions** — any occurrence of the repo name (word boundary match)
+
+Structured lists extract per-repo feature descriptions. Freeform mentions flag the repo as involved but don't extract specific features.
+
+### Current Repo Priority
+
+The repo whose path matches your current working directory gets more detailed planning guidance (6-point plan), while other repos get abbreviated guidance (3-point summary). If you're not inside any configured repo, all repos get equal detail.

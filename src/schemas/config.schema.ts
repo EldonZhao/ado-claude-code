@@ -40,6 +40,10 @@ export const WorkItemTypeDefaultsSchema = z.object({
   customFields: z.record(z.string(), z.unknown()).optional(),
 });
 
+export const RepoConfigSchema = z.object({
+  path: z.string().min(1),
+});
+
 export const AdoConfigSchema = z.object({
   version: z.string().default("1.0"),
   azure_devops: AzureDevOpsConfigSchema,
@@ -54,6 +58,7 @@ export const AdoConfigSchema = z.object({
     conflictResolution: "ask",
   }),
   defaults: z.record(z.string(), WorkItemTypeDefaultsSchema).optional(),
+  repos: z.record(z.string(), RepoConfigSchema).optional(),
 });
 
 export type AdoConfigInput = z.input<typeof AdoConfigSchema>;

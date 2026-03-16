@@ -54,6 +54,16 @@ node dist/cli.js <domain> <action> [--flags]
 - `.github/workitems/` — Synced work items (YAML)
 - `.github/instructions/` — Troubleshooting guides (YAML)
 
+### Multi-Repo Config
+Optional `repos` section in `.ado-config.yaml` maps repo names to local paths for multi-repo code plan support:
+```yaml
+repos:
+  frontend:
+    path: C:\Users\me\projects\frontend
+  backend:
+    path: C:\Users\me\projects\backend
+```
+
 ## Plugin Structure
 - `.claude-plugin/plugin.json` — Plugin manifest
 - `dist/cli.js` — Self-contained CLI bundle (committed, no build step needed for marketplace installs)

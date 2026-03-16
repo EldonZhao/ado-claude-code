@@ -55,6 +55,7 @@ export interface AdoConfig {
     defaultQuery?: string;
     conflictResolution: "local-wins" | "remote-wins" | "ask";
   };
+  repos?: Record<string, { path: string }>;
 }
 
 // Sync types

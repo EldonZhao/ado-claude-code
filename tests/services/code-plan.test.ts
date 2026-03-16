@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { getCodePlanGuidance } from "../../src/services/planning/code-plan.js";
+import { getCodePlanGuidance, type CodePlanRepoContext } from "../../src/services/planning/code-plan.js";
 import type { LocalWorkItemOutput } from "../../src/schemas/workitem.schema.js";
+import type { RepoFeatures } from "../../src/services/planning/repo-detection.js";
 
 function makeItem(
   overrides?: Partial<LocalWorkItemOutput>,
@@ -104,5 +105,114 @@ describe("getCodePlanGuidance", () => {
     expect(guidance).toContain("Step-by-step changes");
     expect(guidance).toContain("Testing suggestions");
     expect(guidance).toContain("Edge cases and risks");
+  });
+});
+
+describe("getCodePlanGuidance with repo context", () => {
+  function makeRepo(overrides?: Partial<RepoFeatures>): RepoFeatures {
+    return {
+      repoName: "backend",
+      repoPath: "/projects/backend",
+      features: [],
+      isCurrentRepo: false,
+      ...overrides,
+    };
+  }
+
+  it("includes repo sections when repoContext is provided", () => {
+    const item = makeItem();
+    const repoContext: CodePlanRepoContext = {
+      detectedRepos: [
+        makeRepo({ repoName: "backend", isCurrentRepo: true, features: ["Add auth"] }),
+        makeRepo({ repoName: "frontend", repoPath: "/projects/frontend", features: ["Login page"] }),
+      ],
+      currentRepoName: "backend",
+    };
+    const guidance = getCodePlanGuidance(item, repoContext);
+    expect(guidance).toContain("## Repositories Involved");
+    expect(guidance).toContain("### backend (CURRENT REPO)");
+    expect(guidance).toContain("### frontend");
+    expect(guidance).toContain("Add auth");
+    expect(guidance).toContain("Login page");
+  });
+
+  it("falls back to standard guidance when no repoContext", () => {
+    const item = makeItem();
+    const guidance = getCodePlanGuidance(item);
+    expect(guidance).not.toContain("## Repositories Involved");
+    expect(guidance).toContain("## Instructions");
+    expect(guidance).toContain("Files to analyze");
+  });
+
+  it("falls back when repoContext has empty detectedRepos", () => {
+    const item = makeItem();
+    const repoContext: CodePlanRepoContext = { detectedRepos: [] };
+    const guidance = getCodePlanGuidance(item, repoContext);
+    expect(guidance).not.toContain("## Repositories Involved");
+    expect(guidance).toContain("## Instructions");
+    expect(guidance).toContain("Files to analyze");
+  });
+
+  it("shows detailed guidance for current repo and abbreviated for others", () => {
+    const item = makeItem();
+    const repoContext: CodePlanRepoContext = {
+      detectedRepos: [
+        makeRepo({ repoName: "backend", isCurrentRepo: true }),
+        makeRepo({ repoName: "frontend", repoPath: "/projects/frontend" }),
+      ],
+      currentRepoName: "backend",
+    };
+    const guidance = getCodePlanGuidance(item, repoContext);
+    // Current repo gets full 6-point plan
+    expect(guidance).toContain("Files to analyze");
+    expect(guidance).toContain("Architectural approach");
+    // Other repo gets abbreviated 3-point plan
+    expect(guidance).toContain("Key changes");
+    expect(guidance).toContain("Interface contracts");
+    expect(guidance).toContain("Coordination notes");
+  });
+
+  it("shows equal guidance for all repos when not in any known repo", () => {
+    const item = makeItem();
+    const repoContext: CodePlanRepoContext = {
+      detectedRepos: [
+        makeRepo({ repoName: "backend", isCurrentRepo: false }),
+        makeRepo({ repoName: "frontend", repoPath: "/projects/frontend", isCurrentRepo: false }),
+      ],
+    };
+    const guidance = getCodePlanGuidance(item, repoContext);
+    // Both repos should get detailed plans (no Key changes / Interface contracts)
+    expect(guidance).not.toContain("Key changes");
+    expect(guidance).not.toContain("Interface contracts");
+    // Count occurrences of "Files to analyze" — should appear once per repo
+    const matches = guidance.match(/Files to analyze/g);
+    expect(matches).toHaveLength(2);
+  });
+
+  it("handles repos with no specific features listed", () => {
+    const item = makeItem();
+    const repoContext: CodePlanRepoContext = {
+      detectedRepos: [
+        makeRepo({ repoName: "backend", isCurrentRepo: true, features: [] }),
+      ],
+      currentRepoName: "backend",
+    };
+    const guidance = getCodePlanGuidance(item, repoContext);
+    expect(guidance).toContain("### backend (CURRENT REPO)");
+    expect(guidance).not.toContain("**Features:**");
+    // Plan text should not include "for:" when no features
+    expect(guidance).toContain("Your plan for **backend** should include:");
+  });
+
+  it("includes feature note in plan header when features exist", () => {
+    const item = makeItem();
+    const repoContext: CodePlanRepoContext = {
+      detectedRepos: [
+        makeRepo({ repoName: "backend", isCurrentRepo: true, features: ["Add auth", "Add logging"] }),
+      ],
+      currentRepoName: "backend",
+    };
+    const guidance = getCodePlanGuidance(item, repoContext);
+    expect(guidance).toContain("Your plan for **backend** for: Add auth; Add logging should include:");
   });
 });
