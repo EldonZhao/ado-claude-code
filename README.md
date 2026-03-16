@@ -2,16 +2,16 @@
 
 > **Azure DevOps meets AI — plan, track, and troubleshoot from your terminal.**
 
-Claude Code plugin for [Azure DevOps](https://dev.azure.com) integration. Sync work items to local YAML files, plan work item breakdowns with AI, manage troubleshooting guides (TSGs), and leverage AI-assisted diagnostics.
+Claude Code plugin for [Azure DevOps](https://dev.azure.com) integration. Sync workitems to local YAML files, plan workitem breakdowns with AI, manage troubleshooting instructions, and leverage AI-assisted diagnostics.
 
 ## Features
 
-- **Work Item Sync** — Bidirectional sync between Azure DevOps and local YAML files, with automatic sync state tracking across all CLI commands
+- **Workitem Sync** — Bidirectional sync between Azure DevOps and local YAML files, with automatic sync state tracking across all CLI commands
 - **AI-Assisted Planning** — Break down Epics into Features, Features into Stories, Stories into Tasks
-- **Code Planning** — Generate implementation plans from work items, with automatic state transition and comment posting
-- **Work Item Management** — Create, update, and query work items directly from the CLI
-- **TSG Management** — Create and manage structured troubleshooting guides
-- **AI Troubleshooting** — Diagnose issues by matching symptoms to TSGs, run diagnostics, suggest resolutions
+- **Code Planning** — Generate implementation plans from workitems, with automatic state transition and comment posting
+- **Workitem Management** — Create, update, and query workitems directly from the CLI
+- **Instructions Management** — Create and manage structured troubleshooting instructions
+- **AI Troubleshooting** — Diagnose issues by matching symptoms to instructions, run diagnostics, suggest resolutions
 
 ## Installation
 
@@ -118,22 +118,22 @@ Or:
 
 | Command | Description |
 |---------|-------------|
-| `/ado-claude-code:sync` | Pull/push/full sync work items with Azure DevOps |
-| `/ado-claude-code:code-plan` | Generate a code implementation plan from a work item (auto-updates state and adds comment) |
-| `/ado-claude-code:workitem-plan` | AI-assisted work item hierarchy breakdown |
+| `/ado-claude-code:sync` | Pull/push/full sync workitems with Azure DevOps |
+| `/ado-claude-code:code-plan` | Generate a code implementation plan from a workitem (auto-updates state and adds comment) |
+| `/ado-claude-code:workitem-plan` | AI-assisted workitem hierarchy breakdown |
 | `/ado-claude-code:workitem-query` | Run WIQL queries or list local items |
-| `/ado-claude-code:workitem-create` | Create a new work item in Azure DevOps |
-| `/ado-claude-code:clear` | Clear all synced work items from local storage |
-| `/ado-claude-code:instructions` | Create, manage, and troubleshoot with TSGs |
+| `/ado-claude-code:workitem-create` | Create a new workitem in Azure DevOps |
+| `/ado-claude-code:clear` | Clear all synced workitems from local storage |
+| `/ado-claude-code:instructions` | Create, manage, and troubleshoot with instructions |
 | `/ado-claude-code:setup` | Initialize, validate, login/logout, or show configuration |
-| `/ado-claude-code:summary` | Summarize Azure DevOps progress over a time period (week/month) |
+| `/ado-claude-code:summary` | Summarize Azure DevOps progress over a time period (week/month/custom) |
 
 ### Agents (2)
 
 | Agent | Description |
 |-------|-------------|
-| `ado-planner` | Specialist for breaking down work items into structured hierarchies |
-| `ado-troubleshooter` | Specialist for diagnosing issues using TSG-based troubleshooting |
+| `ado-planner` | Specialist for breaking down workitems into structured hierarchies |
+| `ado-troubleshooter` | Specialist for diagnosing issues using instructions-based troubleshooting |
 
 ### Rules (1)
 
@@ -162,7 +162,7 @@ Configuration is stored in `.claude/.ado-config.yaml`. For PAT auth, set `ADO_PA
 
 ```
 /ado-claude-code:sync pull                   # Pull active items assigned to you (default)
-/ado-claude-code:sync pull --ids=1234,5678   # Pull specific work items
+/ado-claude-code:sync pull --ids=1234,5678   # Pull specific workitems
 /ado-claude-code:sync pull --all             # Pull all your items including Closed/Done
 /ado-claude-code:sync pull --query="SELECT [System.Id] FROM WorkItems WHERE ..."
 /ado-claude-code:sync push                   # Push local changes to Azure DevOps
@@ -171,9 +171,9 @@ Configuration is stored in `.claude/.ado-config.yaml`. For PAT auth, set `ADO_PA
 /ado-claude-code:sync full --mine            # Full sync for your active items
 ```
 
-Synced items are stored as YAML in `.github/workitems/` organized by type. Use `/ado-claude-code:clear --confirm` to remove all synced items and reset sync state.
+Synced items are stored as YAML in `.github/workitems/` organized by type. Use `/ado-claude-code:clear --confirm` to remove all synced workitems and reset sync state.
 
-### Work Items
+### Workitems
 
 ```
 /ado-claude-code:workitem-query list                  # List locally synced items
@@ -182,9 +182,9 @@ Synced items are stored as YAML in `.github/workitems/` organized by type. Use `
 /ado-claude-code:workitem-create Bug "login crashes on empty password"      # Summary → Claude refines title & description
 /ado-claude-code:workitem-create --type=Task --title="Fix the bug"          # Explicit title → pass-through
 /ado-claude-code:workitem-create --type="User Story" --title="As a user, I want..." --parentId=1234
-/ado-claude-code:workitem-plan <id>          # Get breakdown guidance for a work item
+/ado-claude-code:workitem-plan <id>          # Get breakdown guidance for a workitem
 /ado-claude-code:workitem-plan <id> --items='[...]' --create   # Create child items in ADO
-/ado-claude-code:workitem-plan <id> --complete                 # Mark work item as Done/Closed
+/ado-claude-code:workitem-plan <id> --complete                 # Mark workitem as Done/Closed
 ```
 
 When you provide a **summary** instead of an explicit `--title`, Claude refines it into a well-structured title and HTML description using per-type formatting rules (Bug, User Story, Task, Feature, Epic) and presents the result for confirmation before creating.
@@ -203,11 +203,11 @@ defaults:
 ### Code Plan
 
 ```
-/ado-claude-code:code-plan <id>              # Generate implementation plan from a work item
-/ado-claude-code:code-plan <id> --no-update  # Generate plan without updating work item state
+/ado-claude-code:code-plan <id>              # Generate implementation plan from a workitem
+/ado-claude-code:code-plan <id> --no-update  # Generate plan without updating workitem state
 ```
 
-Fetches the work item and returns structured guidance including files to analyze, architectural approach, step-by-step changes, testing suggestions, and edge cases. Automatically transitions the work item to "In Progress" and posts the plan as a comment.
+Fetches the workitem and returns structured guidance including files to analyze, architectural approach, step-by-step changes, testing suggestions, and edge cases. Automatically transitions the workitem to "In Progress" and posts the plan as a comment.
 
 ### Summary
 
@@ -218,19 +218,19 @@ Fetches the work item and returns structured guidance including files to analyze
 /ado-claude-code:summary --query="SELECT ..."             # Custom WIQL query
 ```
 
-Queries Azure DevOps for recently changed work items, groups them by parent Feature, and classifies them into Completed, In Progress, Blocked/Bugs, and New. Returns structured JSON that Claude interprets into a human-readable progress summary.
+Queries Azure DevOps for recently changed workitems, groups them by parent Feature, and classifies them into Completed, In Progress, Blocked/Bugs, and New. Returns structured JSON that Claude interprets into a human-readable progress summary.
 
 ### Instructions
 
 ```
 /ado-claude-code:instructions create --title="Pod OOM" --category=deployment
 /ado-claude-code:instructions create --title="Pod OOM" --category=deployment --template
-/ado-claude-code:instructions create --file=./existing-tsg.md
+/ado-claude-code:instructions create --file=./existing-instructions.md
 /ado-claude-code:instructions list [--category=deployment]
 /ado-claude-code:instructions get <tsg-id>
 /ado-claude-code:instructions update <tsg-id> --title="..." --tags='[...]'
 /ado-claude-code:instructions search --query="pod restarting" --symptoms='["OOMKilled"]'
-/ado-claude-code:instructions score <tsg-id>   # Evaluate TSG completeness (0–125)
+/ado-claude-code:instructions score <tsg-id>   # Evaluate instruction completeness (0–125)
 ```
 
 **Troubleshooting workflow:**
@@ -259,18 +259,18 @@ npm run build    # Production build
 src/
   cli.ts                CLI entry point (arg parsing + routing)
   cli/
-    workitems.ts        Work item handlers
+    workitems.ts        Workitem handlers
     sync.ts             Sync handlers
-    instructions.ts     TSG handlers (create, manage, and troubleshoot)
+    instructions.ts     Instruction handlers (create, manage, and troubleshoot)
     setup.ts            Setup handlers
     troubleshoot.ts     Troubleshooting handlers (diagnose, analyze, suggest, run)
     helpers.ts          Shared CLI utilities
   services/
     ado/                ADO client, auth
     sync/               Sync engine, mapper, state
-    tsg/                TSG search, executor
-    planning/           Work item breakdown, code plan
-  storage/              Config, workitems, TSG, cache (YAML I/O)
+    tsg/                Instruction search, executor
+    planning/           Workitem breakdown, code plan
+  storage/              Config, workitems, instructions, cache (YAML I/O)
   schemas/              Zod validation schemas
   utils/                Logger, error classes
 
@@ -280,8 +280,8 @@ agents/                 Specialist subagents (2)
 rules/                  Always-active conventions
 
 .github/
-  workitems/            Synced work items (YAML), organized by type
-  instructions/         Troubleshooting guides (YAML)
+  workitems/            Synced workitems (YAML), organized by type
+  instructions/         Troubleshooting instructions (YAML)
   .ado-sync/            Sync state tracking
 ```
 
