@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import { output, fatal, parseFlags } from "./helpers.js";
+import { output, fatal, parseFlags, checkHelp } from "./helpers.js";
 import { getInstructionsStorage } from "../storage/index.js";
 import { TsgService } from "../services/tsg/index.js";
 import { TsgSchema } from "../schemas/tsg.schema.js";
@@ -15,7 +15,8 @@ import { handleTroubleshoot, handleDiagnose, handleAnalyze, handleSuggest, handl
 
 export async function handleInstructions(args: string[]): Promise<void> {
   const action = args[0];
-  if (!action) {
+  if (!action || action === "--help" || action === "-h") {
+    checkHelp(args, "instructions");
     fatal("Usage: instructions <create|get|update|list|search|execute|score|diagnose|analyze|suggest|run> [args]");
   }
 
@@ -50,6 +51,7 @@ export async function handleInstructions(args: string[]): Promise<void> {
 }
 
 async function handleCreate(args: string[]): Promise<void> {
+  checkHelp(args, "instructions", "create");
   const flags = parseFlags(args);
   const storage = await getInstructionsStorage();
 
@@ -184,6 +186,7 @@ async function importFromFile(
 }
 
 async function handleGet(args: string[]): Promise<void> {
+  checkHelp(args, "instructions", "get");
   const id = args.find((a) => !a.startsWith("--"));
   if (!id) fatal("Usage: instructions get <id>");
 
@@ -198,6 +201,7 @@ async function handleGet(args: string[]): Promise<void> {
 }
 
 async function handleUpdate(args: string[]): Promise<void> {
+  checkHelp(args, "instructions", "update");
   const flags = parseFlags(args);
   const id = args.find((a) => !a.startsWith("--")) ?? flags.id;
   if (!id) fatal("Usage: instructions update <id> [--title=...] [--tags='[...]'] or --json='{...}'");
@@ -232,6 +236,7 @@ async function handleUpdate(args: string[]): Promise<void> {
 }
 
 async function handleList(args: string[]): Promise<void> {
+  checkHelp(args, "instructions", "list");
   const flags = parseFlags(args);
   const storage = await getInstructionsStorage();
 
@@ -258,6 +263,7 @@ async function handleList(args: string[]): Promise<void> {
 }
 
 async function handleSearch(args: string[]): Promise<void> {
+  checkHelp(args, "instructions", "search");
   const flags = parseFlags(args);
   const storage = await getInstructionsStorage();
   const service = new TsgService(storage);
@@ -287,6 +293,7 @@ async function handleSearch(args: string[]): Promise<void> {
 }
 
 async function handleExecute(args: string[]): Promise<void> {
+  checkHelp(args, "instructions", "execute");
   const flags = parseFlags(args);
   const id = args.find((a) => !a.startsWith("--")) ?? flags.id;
   if (!id) fatal("Usage: instructions execute <id> [--stepId=...] [--rootCause=...] [--parameters='{...}']");
@@ -365,6 +372,7 @@ function mergeTemplate(
 }
 
 async function handleScore(args: string[]): Promise<void> {
+  checkHelp(args, "instructions", "score");
   const id = args.find((a) => !a.startsWith("--"));
   if (!id) fatal("Usage: instructions score <id>");
 

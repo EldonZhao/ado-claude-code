@@ -24,6 +24,7 @@ vi.mock("../../src/storage/config.js", () => ({
 vi.mock("../../src/cli/helpers.js", () => ({
   output: (...args: unknown[]) => mockOutput(...args),
   fatal: vi.fn((msg: string) => { throw new Error(msg); }),
+  checkHelp: vi.fn(),
   parseFlags: vi.fn((args: string[]) => {
     const flags: Record<string, string> = {};
     for (const arg of args) {

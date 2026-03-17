@@ -1,4 +1,4 @@
-import { output, fatal, parseFlags } from "./helpers.js";
+import { output, fatal, parseFlags, checkHelp } from "./helpers.js";
 import { getInstructionsStorage } from "../storage/index.js";
 import { TsgService } from "../services/tsg/index.js";
 import {
@@ -11,6 +11,7 @@ import type { TsgOutput } from "../schemas/tsg.schema.js";
 export async function handleTroubleshoot(args: string[]): Promise<void> {
   const action = args[0];
   if (!action || !["diagnose", "analyze", "suggest", "run"].includes(action)) {
+    checkHelp(args, "instructions", "ts");
     fatal("Usage: instructions <diagnose|analyze|suggest|run> [args]");
   }
 
@@ -27,6 +28,7 @@ export async function handleTroubleshoot(args: string[]): Promise<void> {
 }
 
 export async function handleDiagnose(args: string[]): Promise<void> {
+  checkHelp(args, "instructions", "diagnose");
   const flags = parseFlags(args);
   if (!flags.symptoms) {
     fatal("Usage: instructions diagnose --symptoms='[\"symptom1\",\"symptom2\"]' [--category=...]");
@@ -73,6 +75,7 @@ export async function handleDiagnose(args: string[]): Promise<void> {
 }
 
 export async function handleAnalyze(args: string[]): Promise<void> {
+  checkHelp(args, "instructions", "analyze");
   const flags = parseFlags(args);
   if (!flags.output) {
     fatal("Usage: instructions analyze --output=<diagnostic output> [--tsgId=...] [--stepId=...]");
@@ -123,6 +126,7 @@ export async function handleAnalyze(args: string[]): Promise<void> {
 }
 
 export async function handleSuggest(args: string[]): Promise<void> {
+  checkHelp(args, "instructions", "suggest");
   const flags = parseFlags(args);
   if (!flags.tsgId || !flags.rootCause) {
     fatal("Usage: instructions suggest --tsgId=<id> --rootCause=<cause> [--parameters='{...}']");
@@ -253,6 +257,7 @@ function analyzeAgainstAllTsgs(
 }
 
 export async function handleRun(args: string[]): Promise<void> {
+  checkHelp(args, "instructions", "run");
   const flags = parseFlags(args);
   if (!flags.symptoms) {
     fatal("Usage: instructions run --symptoms='[\"symptom1\"]' [--category=...] [--output=<diagnostic output>] [--parameters='{...}']");

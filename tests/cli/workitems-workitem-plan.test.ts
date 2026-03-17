@@ -46,6 +46,7 @@ vi.mock("../../src/cli/helpers.js", async (importOriginal) => {
       return flags;
     }),
     markdownToHtml: actual.markdownToHtml,
+    checkHelp: vi.fn(),
   };
 });
 

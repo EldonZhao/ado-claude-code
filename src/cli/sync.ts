@@ -1,4 +1,4 @@
-import { getAdoClient, output, fatal, parseFlags } from "./helpers.js";
+import { getAdoClient, output, fatal, parseFlags, checkHelp } from "./helpers.js";
 import { getWorkItemStorage } from "../storage/index.js";
 import { loadConfig, resolveStoragePath, ensureProjectGitignore } from "../storage/config.js";
 import { SyncStateManager } from "../services/sync/state.js";
@@ -7,8 +7,11 @@ import { SyncEngine, type SyncResult } from "../services/sync/engine.js";
 export async function handleSync(args: string[]): Promise<void> {
   const action = args[0];
   if (!action || !["pull", "push", "full"].includes(action)) {
+    checkHelp(args, "sync");
     fatal("Usage: sync <pull|push|full> [--ids=1,2,3] [--query=<wiql>] [--mine] [--all]");
   }
+
+  checkHelp(args.slice(1), "sync", action);
 
   const flags = parseFlags(args.slice(1));
   const ids = flags.ids

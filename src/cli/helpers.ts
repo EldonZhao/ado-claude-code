@@ -5,6 +5,7 @@ import type { LocalWorkItemOutput } from "../schemas/workitem.schema.js";
 import { adoToLocal } from "../services/sync/mapper.js";
 import { SyncStateManager } from "../services/sync/state.js";
 import { loadConfig, resolveStoragePath } from "../storage/config.js";
+import { HELP, type HelpEntry } from "./help.js";
 
 let clientInstance: AdoClient | null = null;
 let syncStateInstance: SyncStateManager | null = null;
@@ -144,4 +145,46 @@ export function parseFlags(args: string[]): Record<string, string> {
     }
   }
   return flags;
+}
+
+/** Format and print help for a command, then exit 0 */
+export function showHelp(entry: HelpEntry): never {
+  const lines: string[] = [];
+  lines.push(`Usage: ${entry.usage}`);
+  lines.push("");
+  lines.push(entry.description);
+
+  if (entry.flags && entry.flags.length > 0) {
+    lines.push("");
+    lines.push("Flags:");
+    const maxName = Math.max(...entry.flags.map((f) => f.name.length));
+    for (const flag of entry.flags) {
+      lines.push(`  ${flag.name.padEnd(maxName + 2)}${flag.description}`);
+    }
+  }
+
+  if (entry.examples && entry.examples.length > 0) {
+    lines.push("");
+    lines.push("Examples:");
+    for (const ex of entry.examples) {
+      lines.push(`  ${ex}`);
+    }
+  }
+
+  lines.push("");
+  process.stdout.write(lines.join("\n"));
+  process.exit(0);
+}
+
+/** If args contain --help or -h, show help and exit. Otherwise no-op. */
+export function checkHelp(args: string[], domain: string, action?: string): void {
+  if (!args.includes("--help") && !args.includes("-h")) return;
+
+  const domainHelp = HELP[domain];
+  if (!domainHelp) return;
+
+  const entry = domainHelp[action ?? "_domain"];
+  if (!entry) return;
+
+  showHelp(entry);
 }

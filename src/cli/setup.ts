@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { output, fatal, parseFlags } from "./helpers.js";
+import { output, fatal, parseFlags, checkHelp } from "./helpers.js";
 import { saveConfig, loadConfig, clearConfigCache, resolveStoragePath, ensureProjectGitignore } from "../storage/config.js";
 import { getCredentials, clearTokenCache } from "../services/ado/auth.js";
 import { AdoConfigSchema, type AdoConfigOutput } from "../schemas/config.schema.js";
@@ -40,6 +40,7 @@ export function parseAdoUrl(url: string): { organization: string; project?: stri
 export async function handleSetup(args: string[]): Promise<void> {
   const action = args[0];
   if (!action || !["init", "validate", "show", "login", "logout"].includes(action)) {
+    checkHelp(args, "setup");
     fatal("Usage: setup <init|validate|show|login|logout> [args]");
   }
 
@@ -47,17 +48,22 @@ export async function handleSetup(args: string[]): Promise<void> {
     case "init":
       return handleInit(args.slice(1));
     case "validate":
+      checkHelp(args.slice(1), "setup", "validate");
       return handleValidate();
     case "show":
+      checkHelp(args.slice(1), "setup", "show");
       return handleShow();
     case "login":
+      checkHelp(args.slice(1), "setup", "login");
       return handleLogin();
     case "logout":
+      checkHelp(args.slice(1), "setup", "logout");
       return handleLogout();
   }
 }
 
 async function handleInit(args: string[]): Promise<void> {
+  checkHelp(args, "setup", "init");
   const flags = parseFlags(args);
 
   let input: Record<string, string | undefined>;

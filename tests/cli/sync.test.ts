@@ -28,6 +28,7 @@ vi.mock("../../src/cli/helpers.js", () => ({
   getAdoClient: vi.fn().mockResolvedValue({}),
   output: (...args: unknown[]) => mockOutput(...args),
   fatal: (msg: string) => mockFatal(msg),
+  checkHelp: vi.fn(),
   parseFlags: vi.fn((args: string[]) => {
     const flags: Record<string, string> = {};
     for (const arg of args) {

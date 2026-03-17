@@ -1,4 +1,4 @@
-import { getAdoClient, getSyncStateManager, mapAdoToLocal, formatWorkItemSummary, output, fatal, parseFlags } from "./helpers.js";
+import { getAdoClient, getSyncStateManager, mapAdoToLocal, formatWorkItemSummary, output, fatal, parseFlags, checkHelp } from "./helpers.js";
 import { getWorkItemStorage } from "../storage/index.js";
 import { loadConfig } from "../storage/config.js";
 import { SyncStateManager } from "../services/sync/state.js";
@@ -43,7 +43,8 @@ async function saveAndTrack(
 
 export async function handleWorkItems(args: string[]): Promise<void> {
   const action = args[0];
-  if (!action) {
+  if (!action || action === "--help" || action === "-h") {
+    checkHelp(args, "workitems");
     fatal("Usage: workitems <get|list|create|update|query|plan|workitem-plan|summary> [args]");
   }
 
@@ -71,6 +72,7 @@ export async function handleWorkItems(args: string[]): Promise<void> {
 }
 
 async function handleGet(args: string[]): Promise<void> {
+  checkHelp(args, "workitems", "get");
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
   if (!idStr) fatal("Usage: workitems get <id> [--expand=all|relations|fields] [--no-save]");
@@ -92,6 +94,7 @@ async function handleGet(args: string[]): Promise<void> {
 }
 
 async function handleList(args: string[]): Promise<void> {
+  checkHelp(args, "workitems", "list");
   const flags = parseFlags(args);
   const storage = await getWorkItemStorage();
   const items = await storage.listAll({
@@ -109,6 +112,7 @@ async function handleList(args: string[]): Promise<void> {
 }
 
 async function handleCreate(args: string[]): Promise<void> {
+  checkHelp(args, "workitems", "create");
   const flags = parseFlags(args);
 
   // Support --json for full JSON input
@@ -148,6 +152,7 @@ async function handleCreate(args: string[]): Promise<void> {
 }
 
 async function handleUpdate(args: string[]): Promise<void> {
+  checkHelp(args, "workitems", "update");
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
   if (!idStr) fatal("Usage: workitems update <id> [--title=...] [--state=...] [--priority=N] [--comment=...] [--complete]");
@@ -251,6 +256,7 @@ async function handleUpdate(args: string[]): Promise<void> {
 }
 
 async function handleQuery(args: string[]): Promise<void> {
+  checkHelp(args, "workitems", "query");
   const flags = parseFlags(args);
   // The WIQL can be a positional arg (quoted) or --wiql flag
   const wiql = args.find((a) => !a.startsWith("--")) ?? flags.wiql;
@@ -287,6 +293,7 @@ function getBugCompletionFields(type: string): Record<string, unknown> | undefin
 }
 
 async function handlePlan(args: string[]): Promise<void> {
+  checkHelp(args, "workitems", "plan");
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
   if (!idStr) fatal("Usage: workitems plan <id> [--no-update]");
@@ -409,6 +416,7 @@ async function handlePlan(args: string[]): Promise<void> {
 }
 
 async function handleWorkitemPlan(args: string[]): Promise<void> {
+  checkHelp(args, "workitems", "workitem-plan");
   const flags = parseFlags(args);
   const idStr = args.find((a) => !a.startsWith("--")) ?? flags.id;
   if (!idStr) fatal("Usage: workitems workitem-plan <id> [--items=<json>] [--create] [--complete] [--no-update]");
@@ -613,6 +621,7 @@ async function handleWorkitemPlan(args: string[]): Promise<void> {
 }
 
 async function handleSummary(args: string[]): Promise<void> {
+  checkHelp(args, "workitems", "summary");
   const flags = parseFlags(args);
   const period = flags.period ?? "week";
   const days = period === "month" ? 30 : 7;

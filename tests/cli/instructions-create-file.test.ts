@@ -26,6 +26,7 @@ vi.mock("../../src/cli/helpers.js", () => ({
   fatal: (msg: string) => {
     throw new Error(msg);
   },
+  checkHelp: vi.fn(),
   parseFlags: (args: string[]) => {
     const flags: Record<string, string> = {};
     for (const arg of args) {

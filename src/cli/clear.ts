@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { output, parseFlags } from "./helpers.js";
+import { output, parseFlags, checkHelp } from "./helpers.js";
 import { loadConfig, resolveStoragePath, getProjectRoot } from "../storage/config.js";
 import { WorkItemStorage } from "../storage/workitems.js";
 import { SyncStateManager } from "../services/sync/state.js";
@@ -11,6 +11,7 @@ const DEFAULT_BASE_PATH = "./.github";
 const DEFAULT_WORK_ITEMS_PATH = "workitems";
 
 export async function handleClear(args: string[]): Promise<void> {
+  checkHelp(args, "clear");
   const flags = parseFlags(args);
   const confirm = flags.confirm !== undefined;
 

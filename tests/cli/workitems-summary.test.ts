@@ -34,6 +34,7 @@ vi.mock("../../src/cli/helpers.js", async (importOriginal) => {
     fatal: (msg: string) => mockFatal(msg),
     parseFlags: actual.parseFlags,
     markdownToHtml: actual.markdownToHtml,
+    checkHelp: vi.fn(),
   };
 });
 
