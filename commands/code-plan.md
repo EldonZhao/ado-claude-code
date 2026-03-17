@@ -33,7 +33,7 @@ When invoked without `--no-update`, this command will:
 
 The state update is non-blocking: if it fails, the code plan is still returned.
 
-**Note:** This command does NOT auto-post a comment. After Claude generates the actual implementation plan, post it to the work item using `workitems update <id> --comment="<html>"`.
+The CLI does not auto-post a comment. Instead, after you analyze the codebase and produce the implementation plan, you must post it to the work item yourself (see the Workflow section below).
 
 ## Bidirectional Sync
 
@@ -69,22 +69,34 @@ node dist/cli.js workitems update --project-dir=/path/to/project <id> --complete
 ```
 1. /code-plan 12345              → Fetches item, pushes local edits, generates plan guidance, transitions to In Progress
 2. (Claude analyzes codebase and produces implementation plan)
-3. workitems update 12345 --comment="<h3>Implementation Plan</h3>..."   → Posts the actual plan
-4. (Claude implements step 1)
-5. workitems update 12345 --comment="<h4>Progress Update</h4>..."   → Posts mid-session update
-6. (Claude implements step 2)
-7. workitems update 12345 --comment="<h4>Progress Update</h4>..."   → Posts another update
-8. workitems update 12345 --complete --comment="<h4>Implementation Complete</h4>..."  → Marks done with summary
+3. (Claude auto-posts plan to ADO via workitems update --comment)
+4. (Claude presents plan to user, waits for confirmation)
+5. (Claude implements step 1)
+6. workitems update 12345 --comment="<h4>Progress Update</h4>..."   → Posts mid-session update
+7. (Claude implements step 2)
+8. workitems update 12345 --comment="<h4>Progress Update</h4>..."   → Posts another update
+9. workitems update 12345 --complete --comment="<h4>Implementation Complete</h4>..."  → Marks done with summary
 ```
 
-This fetches the work item and returns structured guidance for Claude to analyze the codebase and produce an implementation plan including:
+## Workflow
 
-1. **Files to analyze** — Existing files relevant to the change
-2. **Architectural approach** — How the change fits the codebase
-3. **Files to modify or create** — Specific files with change summaries
-4. **Step-by-step changes** — Ordered implementation steps
-5. **Testing suggestions** — Unit, integration, or manual verification
-6. **Edge cases and risks** — Potential issues and gotchas
+After calling the CLI, follow these steps **automatically** without waiting for user input:
+
+1. **Read the `codePlan` guidance** from the CLI JSON output.
+2. **Analyze the codebase** using the guidance — explore relevant files, understand the architecture, and identify what needs to change.
+3. **Produce a concrete implementation plan** in markdown — the plan should include:
+   - Files to analyze
+   - Architectural approach
+   - Files to modify or create
+   - Step-by-step changes
+   - Testing suggestions
+   - Edge cases and risks
+4. **Post the plan to the ADO work item** as a comment immediately after generating it:
+   ```bash
+   node dist/cli.js workitems update --project-dir=/path/to/project <id> --comment="<h3>Implementation Plan</h3><p><em>TIMESTAMP</em></p>PLAN_AS_HTML"
+   ```
+   Convert the markdown plan to HTML for the comment. This ensures the plan is visible to all stakeholders on the ADO work item.
+5. **Present the plan to the user** and wait for confirmation before starting implementation.
 
 ## Example
 
