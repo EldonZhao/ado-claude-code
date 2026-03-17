@@ -21,14 +21,17 @@ Generate a human-readable summary of Azure DevOps work item activity over a time
 ## Usage
 
 ```bash
-node dist/cli.js workitems summary --project-dir=/path/to/project [--period=week|month] [--assignedTo=user@example.com] [--query="WIQL override"]
+node dist/cli.js workitems summary --project-dir=/path/to/project [--period=week|month] [--days=N] [--top=N] [--assignedTo=user@example.com] [--all] [--query="WIQL override"]
 ```
 
 ## Flags
 
 - `--period=week` (default) — Items changed in the last 7 days
 - `--period=month` — Items changed in the last 30 days
-- `--assignedTo=user@example.com` — Filter to a specific assignee
+- `--days=N` — Custom look-back window in days (overrides `--period`)
+- `--top=N` — Limit results to the first N items
+- `--assignedTo=user@example.com` — Filter to a specific assignee (default: current user)
+- `--all` — Include all users, not just items assigned to you
 - `--query="SELECT ..."` — Override the WIQL query entirely
 
 ## Workflow

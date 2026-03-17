@@ -624,32 +624,49 @@ async function handleSummary(args: string[]): Promise<void> {
   checkHelp(args, "workitems", "summary");
   const flags = parseFlags(args);
   const period = flags.period ?? "week";
-  const days = period === "month" ? 30 : 7;
+  const days = flags.days ? parseInt(flags.days, 10) : (period === "month" ? 30 : 7);
 
   const client = await getAdoClient();
 
   // Build WIQL — user can override with --query
+  // Default: filter to current user (@me) unless --assignedTo or --all is specified
+  const assignedFilter = flags.all
+    ? ""
+    : flags.assignedTo
+      ? ` AND [System.AssignedTo] = '${flags.assignedTo.replace(/'/g, "''")}'`
+      : " AND [System.AssignedTo] = @me";
   const wiql = flags.query ??
     `SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = @project AND [System.ChangedDate] >= @today - ${days}` +
-    (flags.assignedTo ? ` AND [System.AssignedTo] = '${flags.assignedTo}'` : "") +
+    assignedFilter +
     ` ORDER BY [System.ChangedDate] DESC`;
 
-  const adoItems = await client.queryWorkItems(wiql);
+  let adoItems = await client.queryWorkItems(wiql);
+
+  // Apply result cap
+  const maxItems = flags.top ? parseInt(flags.top, 10) : undefined;
+  if (maxItems && adoItems.length > maxItems) {
+    adoItems = adoItems.slice(0, maxItems);
+  }
 
   if (adoItems.length === 0) {
     output({ period, days, totalItems: 0, summary: { completed: { count: 0, groups: [] }, inProgress: { count: 0, groups: [] }, blocked: { count: 0, groups: [] }, new: { count: 0, groups: [] } }, allItems: [] });
     return;
   }
 
-  // Fetch latest comment for each item
+  // Fetch latest comment for each item (batched for performance)
+  const BATCH = 10;
   const items: Array<LocalWorkItemOutput & { latestComment?: string }> = [];
-  for (const raw of adoItems) {
-    const mapped = mapAdoToLocal(raw);
-    try {
-      const comment = await client.getLatestComment(raw.id);
-      if (comment) mapped.latestComment = comment;
-    } catch { /* ignore comment fetch failures */ }
-    items.push(mapped);
+  for (let i = 0; i < adoItems.length; i += BATCH) {
+    const batch = adoItems.slice(i, i + BATCH);
+    const comments = await Promise.allSettled(
+      batch.map(raw => client.getLatestComment(raw.id)),
+    );
+    for (let j = 0; j < batch.length; j++) {
+      const mapped = mapAdoToLocal(batch[j]);
+      const r = comments[j];
+      if (r.status === "fulfilled" && r.value) mapped.latestComment = r.value;
+      items.push(mapped);
+    }
   }
 
   // Collect unique parent IDs that aren't in our item set
@@ -661,18 +678,24 @@ async function handleSummary(args: string[]): Promise<void> {
     }
   }
 
-  // Fetch parent items for grouping context
+  // Fetch parent items for grouping context (parallelized)
   const parents = new Map<number, { id: number; type: string; title: string; state: string }>();
-  for (const pid of parentIds) {
-    try {
+  const parentEntries = await Promise.allSettled(
+    Array.from(parentIds).map(async pid => {
       const p = await client.getWorkItem(pid);
-      parents.set(pid, {
-        id: p.id,
+      return {
+        pid,
         type: p.fields["System.WorkItemType"] as string,
         title: p.fields["System.Title"] as string,
         state: p.fields["System.State"] as string,
-      });
-    } catch { /* ignore unavailable parents */ }
+      };
+    }),
+  );
+  for (const entry of parentEntries) {
+    if (entry.status === "fulfilled") {
+      const { pid, ...info } = entry.value;
+      parents.set(pid, { id: pid, ...info });
+    }
   }
 
   // Also include parents that are in our item set
@@ -688,15 +711,28 @@ async function handleSummary(args: string[]): Promise<void> {
     }
   }
 
-  // Classify items
+  // Classify items (mutually exclusive — each item appears in exactly one category)
   const completedStates = new Set(["Done", "Closed", "Completed", "Resolved", "Removed"]);
   const inProgressStates = new Set(["Active", "In Progress", "Committed"]);
-  const newStates = new Set(["New", "To Do", "Proposed", "Approved"]);
 
-  const completed = items.filter(i => completedStates.has(i.state));
-  const inProgress = items.filter(i => inProgressStates.has(i.state));
-  const blocked = items.filter(i => i.state === "Blocked" || (i.type === "Bug" && !completedStates.has(i.state)));
-  const newItems = items.filter(i => newStates.has(i.state));
+  const completed: typeof items = [];
+  const inProgress: typeof items = [];
+  const blocked: typeof items = [];
+  const newItems: typeof items = [];
+
+  for (const item of items) {
+    if (item.state === "Blocked") {
+      blocked.push(item);
+    } else if (completedStates.has(item.state)) {
+      completed.push(item);
+    } else if (item.type === "Bug") {
+      blocked.push(item);  // non-completed bugs go to blocked/risks
+    } else if (inProgressStates.has(item.state)) {
+      inProgress.push(item);
+    } else {
+      newItems.push(item);
+    }
+  }
 
   // Group by feature parent
   type ParentInfo = { id: number; type: string; title: string; state: string };
@@ -704,7 +740,7 @@ async function handleSummary(args: string[]): Promise<void> {
     const groups = new Map<string, { parent?: ParentInfo; items: typeof items }>();
     for (const item of subset) {
       const parentInfo = item.parent ? parents.get(item.parent) : undefined;
-      const key = parentInfo ? `feature-${parentInfo.id}` : `standalone-${item.id}`;
+      const key = parentInfo ? `feature-${parentInfo.id}` : "ungrouped";
       if (!groups.has(key)) {
         groups.set(key, { parent: parentInfo, items: [] });
       }

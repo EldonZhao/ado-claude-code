@@ -112,9 +112,9 @@ describe("handleSummary (workitems summary)", () => {
 
     await handleWorkItems(["summary"]);
 
-    expect(mockQueryWorkItems).toHaveBeenCalledWith(
-      expect.stringContaining("@today - 7"),
-    );
+    const wiql = mockQueryWorkItems.mock.calls[0][0] as string;
+    expect(wiql).toContain("@today - 7");
+    expect(wiql).toContain("[System.AssignedTo] = @me");
     const result = mockOutput.mock.calls[0][0];
     expect(result.period).toBe("week");
     expect(result.days).toBe(7);
@@ -127,22 +127,32 @@ describe("handleSummary (workitems summary)", () => {
 
     await handleWorkItems(["summary", "--period=month"]);
 
-    expect(mockQueryWorkItems).toHaveBeenCalledWith(
-      expect.stringContaining("@today - 30"),
-    );
+    const wiql = mockQueryWorkItems.mock.calls[0][0] as string;
+    expect(wiql).toContain("@today - 30");
+    expect(wiql).toContain("[System.AssignedTo] = @me");
     const result = mockOutput.mock.calls[0][0];
     expect(result.period).toBe("month");
     expect(result.days).toBe(30);
   });
 
-  it("appends assignedTo filter to WIQL", async () => {
+  it("appends assignedTo filter to WIQL instead of @me", async () => {
     mockQueryWorkItems.mockResolvedValue([]);
 
     await handleWorkItems(["summary", "--assignedTo=alice@example.com"]);
 
     const wiql = mockQueryWorkItems.mock.calls[0][0] as string;
     expect(wiql).toContain("[System.AssignedTo] = 'alice@example.com'");
+    expect(wiql).not.toContain("@me");
     expect(wiql).toContain("@today - 7");
+  });
+
+  it("--all removes assignedTo filter", async () => {
+    mockQueryWorkItems.mockResolvedValue([]);
+
+    await handleWorkItems(["summary", "--all"]);
+
+    const wiql = mockQueryWorkItems.mock.calls[0][0] as string;
+    expect(wiql).not.toContain("AssignedTo");
   });
 
   it("uses custom --query when provided", async () => {
@@ -173,8 +183,8 @@ describe("handleSummary (workitems summary)", () => {
     const result = mockOutput.mock.calls[0][0];
     expect(result.totalItems).toBe(8);
     expect(result.summary.completed.count).toBe(2); // Closed + Done
-    expect(result.summary.inProgress.count).toBe(3); // Active Task + In Progress Task + Active Bug
-    expect(result.summary.blocked.count).toBe(2); // Blocked + active Bug
+    expect(result.summary.inProgress.count).toBe(2); // Active Task + In Progress Task
+    expect(result.summary.blocked.count).toBe(2); // Blocked + Active Bug
     expect(result.summary.new.count).toBe(2); // New + To Do
   });
 
@@ -198,7 +208,7 @@ describe("handleSummary (workitems summary)", () => {
 
     const result = mockOutput.mock.calls[0][0];
     const completedGroups = result.summary.completed.groups;
-    expect(completedGroups.length).toBe(2); // one feature group + one standalone
+    expect(completedGroups.length).toBe(2); // one feature group + one ungrouped
 
     const featureGroup = completedGroups.find(
       (g: any) => g.parent && g.parent.id === featureId,
@@ -207,12 +217,12 @@ describe("handleSummary (workitems summary)", () => {
     expect(featureGroup.parent.title).toBe("Login Feature");
     expect(featureGroup.items.length).toBe(2);
 
-    const standaloneGroup = completedGroups.find(
+    const ungrouped = completedGroups.find(
       (g: any) => !g.parent,
     );
-    expect(standaloneGroup).toBeDefined();
-    expect(standaloneGroup.items.length).toBe(1);
-    expect(standaloneGroup.items[0].id).toBe(3);
+    expect(ungrouped).toBeDefined();
+    expect(ungrouped.items.length).toBe(1);
+    expect(ungrouped.items[0].id).toBe(3);
   });
 
   it("fetches latest comments for each item", async () => {
@@ -285,9 +295,72 @@ describe("handleSummary (workitems summary)", () => {
     await handleWorkItems(["summary"]);
 
     const result = mockOutput.mock.calls[0][0];
-    // Item should be standalone since parent fetch failed
+    // Item should be ungrouped since parent fetch failed
     const completedGroups = result.summary.completed.groups;
     expect(completedGroups.length).toBe(1);
     expect(completedGroups[0].parent).toBeUndefined();
+  });
+
+  it("uses --days flag to override period", async () => {
+    mockQueryWorkItems.mockResolvedValue([]);
+
+    await handleWorkItems(["summary", "--days=14"]);
+
+    expect(mockQueryWorkItems).toHaveBeenCalledWith(
+      expect.stringContaining("@today - 14"),
+    );
+    const result = mockOutput.mock.calls[0][0];
+    expect(result.days).toBe(14);
+  });
+
+  it("--days overrides --period", async () => {
+    mockQueryWorkItems.mockResolvedValue([]);
+
+    await handleWorkItems(["summary", "--period=month", "--days=5"]);
+
+    expect(mockQueryWorkItems).toHaveBeenCalledWith(
+      expect.stringContaining("@today - 5"),
+    );
+    const result = mockOutput.mock.calls[0][0];
+    expect(result.days).toBe(5);
+  });
+
+  it("caps results with --top flag", async () => {
+    const items = Array.from({ length: 10 }, (_, i) =>
+      makeItem({ id: i + 1, state: "Active", type: "Task" }),
+    );
+    mockQueryWorkItems.mockResolvedValue(items);
+
+    await handleWorkItems(["summary", "--top=5"]);
+
+    const result = mockOutput.mock.calls[0][0];
+    expect(result.totalItems).toBe(5);
+    expect(result.allItems.length).toBe(5);
+  });
+
+  it("sanitizes single quotes in assignedTo", async () => {
+    mockQueryWorkItems.mockResolvedValue([]);
+
+    await handleWorkItems(["summary", "--assignedTo=O'Brien"]);
+
+    const wiql = mockQueryWorkItems.mock.calls[0][0] as string;
+    expect(wiql).toContain("[System.AssignedTo] = 'O''Brien'");
+  });
+
+  it("groups multiple standalone items into one ungrouped group", async () => {
+    const items = [
+      makeItem({ id: 1, state: "Active", type: "Task" }),
+      makeItem({ id: 2, state: "Active", type: "Task" }),
+      makeItem({ id: 3, state: "Active", type: "Task" }),
+    ];
+    mockQueryWorkItems.mockResolvedValue(items);
+
+    await handleWorkItems(["summary"]);
+
+    const result = mockOutput.mock.calls[0][0];
+    const inProgressGroups = result.summary.inProgress.groups;
+    expect(inProgressGroups.length).toBe(1); // all in one ungrouped group
+    expect(inProgressGroups[0].parent).toBeUndefined();
+    expect(inProgressGroups[0].items.length).toBe(3);
   });
 });
