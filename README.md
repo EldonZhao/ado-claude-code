@@ -8,7 +8,7 @@ Claude Code plugin for [Azure DevOps](https://dev.azure.com) integration. Sync w
 
 - **Workitem Sync** — Bidirectional sync between Azure DevOps and local YAML files, with automatic sync state tracking across all CLI commands
 - **AI-Assisted Planning** — Break down Epics into Features, Features into Stories, Stories into Tasks
-- **Code Planning** — Generate implementation plans from workitems, with automatic state transition and comment posting
+- **Code Planning** — Generate implementation plans from workitems, with automatic state transition, comment posting, and multi-repo support
 - **Workitem Management** — Create, update, and query workitems directly from the CLI
 - **Instructions Management** — Create and manage structured troubleshooting instructions
 - **AI Troubleshooting** — Diagnose issues by matching symptoms to instructions, run diagnostics, suggest resolutions
@@ -145,6 +145,17 @@ Or:
 
 All commands are invoked as slash commands in the Claude terminal. With marketplace install, commands are prefixed with `ado-claude-code:`.
 
+### Help
+
+Every command and action supports `--help` (or `-h`) to display usage info:
+
+```
+node dist/cli.js workitems --help               # Domain-level help
+node dist/cli.js workitems get --help            # Action-level help
+node dist/cli.js sync pull -h                    # Short form
+node dist/cli.js instructions diagnose --help    # Works on any action
+```
+
 ### Setup
 
 ```
@@ -209,6 +220,36 @@ defaults:
 
 Fetches the workitem and returns structured guidance including files to analyze, architectural approach, step-by-step changes, testing suggestions, and edge cases. Automatically transitions the workitem to "In Progress" and posts the plan as a comment.
 
+#### Multi-Repo Support
+
+When working on cross-repo workitems, the code plan can detect which repos are involved and generate per-repo guidance. Add a `repos` section to `.claude/.ado-config.yaml`:
+
+```yaml
+repos:
+  frontend:
+    path: C:\Users\me\projects\frontend
+  backend:
+    path: C:\Users\me\projects\backend
+  shared-lib:
+    path: C:\Users\me\projects\shared-lib
+```
+
+Repos are detected from the workitem's description or latest comment using two patterns:
+
+1. **Structured lists** — `- backend: Add auth middleware` or `- **backend**: Add auth middleware` (extracts per-repo feature descriptions)
+2. **Freeform mentions** — any occurrence of the repo name as a word (flags repo as involved)
+
+The repo matching your current working directory gets detailed planning guidance (files, architecture, step-by-step changes, tests, edge cases), while other repos get abbreviated guidance (key changes, interface contracts, coordination notes). If you're not inside any configured repo, all repos get equal detail.
+
+Example workitem description that triggers multi-repo detection:
+
+```
+Implement user authentication:
+- frontend: Add login form and token storage
+- backend: Add JWT auth middleware and /login endpoint
+- shared-lib: Add shared auth types and token validation
+```
+
 ### Summary
 
 ```
@@ -264,12 +305,13 @@ src/
     instructions.ts     Instruction handlers (create, manage, and troubleshoot)
     setup.ts            Setup handlers
     troubleshoot.ts     Troubleshooting handlers (diagnose, analyze, suggest, run)
+    help.ts             Help definitions for all commands
     helpers.ts          Shared CLI utilities
   services/
     ado/                ADO client, auth
     sync/               Sync engine, mapper, state
     tsg/                Instruction search, executor
-    planning/           Workitem breakdown, code plan
+    planning/           Workitem breakdown, code plan, repo detection
   storage/              Config, workitems, instructions, cache (YAML I/O)
   schemas/              Zod validation schemas
   utils/                Logger, error classes
