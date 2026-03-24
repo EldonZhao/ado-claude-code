@@ -188,16 +188,21 @@ describe("SyncEngine", () => {
       const localItem = makeLocalItem({ id: 200, title: "Modified Title" });
       const updatedAdoItem = makeAdoItem({ id: 200, rev: 2 });
 
-      // First call to getAllItemStates (from detectLocalChanges) returns item with old hash
-      // Second call (from pushToAdo) returns item marked localModified
+      // First call to getAllItemStates (from detectLocalChanges in pullFromAdo) returns item with old hash
+      // Second call (from detectLocalChanges inside pushToAdo) returns item already marked localModified
+      // Third call (from pushToAdo itself) returns item marked localModified
       const detectStatesMap = new Map<number, SyncItemState>([
         [200, makeSyncItemState({ localPath: "/fake/200.yaml", adoRev: 1, localHash: "oldhash" })],
+      ]);
+      const pushDetectStatesMap = new Map<number, SyncItemState>([
+        [200, makeSyncItemState({ localPath: "/fake/200.yaml", adoRev: 1, localHash: "oldhash", syncStatus: "localModified" })],
       ]);
       const pushStatesMap = new Map<number, SyncItemState>([
         [200, makeSyncItemState({ localPath: "/fake/200.yaml", adoRev: 1, localHash: "oldhash", syncStatus: "localModified" })],
       ]);
       (stateManager.getAllItemStates as ReturnType<typeof vi.fn>)
         .mockResolvedValueOnce(detectStatesMap)
+        .mockResolvedValueOnce(pushDetectStatesMap)
         .mockResolvedValueOnce(pushStatesMap);
 
       (storage.loadById as ReturnType<typeof vi.fn>).mockResolvedValue(localItem);

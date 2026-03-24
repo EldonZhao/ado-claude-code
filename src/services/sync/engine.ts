@@ -153,6 +153,12 @@ export class SyncEngine {
    */
   async pushToAdo(options: PushOptions = {}): Promise<SyncResult> {
     const result: SyncResult = { pulled: 0, pushed: 0, conflicts: 0, errors: [] };
+
+    // Auto-detect local changes when no specific IDs are given
+    if (!options.ids) {
+      await this.detectLocalChanges();
+    }
+
     const allStates = await this.stateManager.getAllItemStates();
 
     const idsToProcess = options.ids
