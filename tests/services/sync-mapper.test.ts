@@ -224,16 +224,16 @@ describe("serializeForHash", () => {
     expect(serializeForHash(item1)).toBe(serializeForHash(item2));
   });
 
-  it("excludes latestComment from serialization", () => {
+  it("includes latestComment in serialization (different values produce different hashes)", () => {
     const item1 = makeLocalItem({ latestComment: "Comment A" });
     const item2 = makeLocalItem({ latestComment: "Comment B" });
-    expect(serializeForHash(item1)).toBe(serializeForHash(item2));
+    expect(serializeForHash(item1)).not.toBe(serializeForHash(item2));
   });
 
-  it("excludes latestComment vs undefined from serialization", () => {
+  it("includes latestComment in serialization (present vs undefined produce different hashes)", () => {
     const item1 = makeLocalItem({ latestComment: "Some comment" });
     const item2 = makeLocalItem({ latestComment: undefined });
-    expect(serializeForHash(item1)).toBe(serializeForHash(item2));
+    expect(serializeForHash(item1)).not.toBe(serializeForHash(item2));
   });
 
   it("produces different hashes for different content", () => {

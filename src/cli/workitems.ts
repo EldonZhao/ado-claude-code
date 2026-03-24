@@ -317,27 +317,25 @@ async function handlePlan(args: string[]): Promise<void> {
         if (currentHash !== existingState.localHash) {
           // Local file was modified — push changes to ADO first
           const remoteItem = await client.getWorkItem(id, "relations");
-          if (remoteItem.rev <= existingState.adoRev) {
-            const baselineComment = await client.getLatestComment(id);
-            const baseline = adoToLocal(remoteItem, baselineComment);
-            const patchOps = localToAdoPatch(localItem, baseline);
-            if (patchOps.length > 0) {
-              await client.updateWorkItem({
-                id,
-                title: localItem.title !== baseline.title ? localItem.title : undefined,
-                description: localItem.description !== baseline.description ? localItem.description : undefined,
-                state: localItem.state !== baseline.state ? localItem.state : undefined,
-                assignedTo: localItem.assignedTo !== baseline.assignedTo ? localItem.assignedTo : undefined,
-                areaPath: localItem.areaPath !== baseline.areaPath ? localItem.areaPath : undefined,
-                iterationPath: localItem.iterationPath !== baseline.iterationPath ? localItem.iterationPath : undefined,
-                priority: localItem.priority !== baseline.priority ? localItem.priority : undefined,
-                storyPoints: localItem.storyPoints !== baseline.storyPoints ? localItem.storyPoints : undefined,
-              });
-            }
-            // Push locally edited comment as new ADO comment
-            if (localItem.latestComment && localItem.latestComment !== baseline.latestComment) {
-              await client.addComment(id, localItem.latestComment);
-            }
+          const baselineComment = await client.getLatestComment(id);
+          const baseline = adoToLocal(remoteItem, baselineComment);
+          const patchOps = localToAdoPatch(localItem, baseline);
+          if (patchOps.length > 0) {
+            await client.updateWorkItem({
+              id,
+              title: localItem.title !== baseline.title ? localItem.title : undefined,
+              description: localItem.description !== baseline.description ? localItem.description : undefined,
+              state: localItem.state !== baseline.state ? localItem.state : undefined,
+              assignedTo: localItem.assignedTo !== baseline.assignedTo ? localItem.assignedTo : undefined,
+              areaPath: localItem.areaPath !== baseline.areaPath ? localItem.areaPath : undefined,
+              iterationPath: localItem.iterationPath !== baseline.iterationPath ? localItem.iterationPath : undefined,
+              priority: localItem.priority !== baseline.priority ? localItem.priority : undefined,
+              storyPoints: localItem.storyPoints !== baseline.storyPoints ? localItem.storyPoints : undefined,
+            });
+          }
+          // Push locally edited comment as new ADO comment
+          if (localItem.latestComment && localItem.latestComment !== baseline.latestComment) {
+            await client.addComment(id, localItem.latestComment);
           }
         }
       }

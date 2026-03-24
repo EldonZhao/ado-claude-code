@@ -262,9 +262,10 @@ describe("SyncEngine", () => {
       expect(result.conflicts).toBe(0);
     });
 
-    it("detects conflict when remote rev > synced rev", async () => {
+    it("pushes successfully when remote rev > synced rev (field-level merge)", async () => {
       const localItem = makeLocalItem({ id: 100, title: "Local Edit" });
       const remoteItem = makeAdoItem({ id: 100, rev: 5 }); // Remote advanced to rev 5
+      const updatedItem = makeAdoItem({ id: 100, rev: 6 });
 
       const statesMap = new Map<number, SyncItemState>([
         [100, makeSyncItemState({ syncStatus: "localModified", adoRev: 1 })],
@@ -275,16 +276,52 @@ describe("SyncEngine", () => {
         makeSyncItemState({ syncStatus: "localModified", adoRev: 1 }),
       );
       (client.getWorkItem as ReturnType<typeof vi.fn>).mockResolvedValue(remoteItem);
+      (client.updateWorkItem as ReturnType<typeof vi.fn>).mockResolvedValue(updatedItem);
 
       const result = await engine.pushToAdo();
 
-      expect(client.updateWorkItem).not.toHaveBeenCalled();
-      expect(result.conflicts).toBe(1);
-      expect(result.pushed).toBe(0);
-      expect(stateManager.setItemState).toHaveBeenCalledWith(
-        100,
-        expect.objectContaining({ syncStatus: "conflict" }),
+      expect(client.updateWorkItem).toHaveBeenCalled();
+      expect(result.pushed).toBe(1);
+      expect(result.conflicts).toBe(0);
+    });
+
+    it("pushes only locally changed fields when remote rev advanced", async () => {
+      // Remote changed state (rev 5), local changed description — non-overlapping
+      // Local item has the same state as remote (In Progress) but different description
+      const localItem = makeLocalItem({ id: 100, state: "In Progress", description: "Locally edited description" });
+      const remoteItem = makeAdoItem({
+        id: 100,
+        rev: 5,
+        fields: {
+          ...makeAdoItem().fields,
+          "System.State": "In Progress", // remote changed state
+        },
+      });
+      const updatedItem = makeAdoItem({ id: 100, rev: 6 });
+
+      const statesMap = new Map<number, SyncItemState>([
+        [100, makeSyncItemState({ syncStatus: "localModified", adoRev: 1 })],
+      ]);
+      (stateManager.getAllItemStates as ReturnType<typeof vi.fn>).mockResolvedValue(statesMap);
+      (storage.loadById as ReturnType<typeof vi.fn>).mockResolvedValue(localItem);
+      (stateManager.getItemState as ReturnType<typeof vi.fn>).mockResolvedValue(
+        makeSyncItemState({ syncStatus: "localModified", adoRev: 1 }),
       );
+      (client.getWorkItem as ReturnType<typeof vi.fn>).mockResolvedValue(remoteItem);
+      (client.updateWorkItem as ReturnType<typeof vi.fn>).mockResolvedValue(updatedItem);
+
+      const result = await engine.pushToAdo();
+
+      expect(client.updateWorkItem).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 100,
+          description: "Locally edited description",
+          // state should NOT be sent since local didn't change state
+          state: undefined,
+        }),
+      );
+      expect(result.pushed).toBe(1);
+      expect(result.conflicts).toBe(0);
     });
 
     it("skips items with no meaningful field changes", async () => {

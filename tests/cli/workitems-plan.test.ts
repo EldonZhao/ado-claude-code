@@ -366,9 +366,10 @@ describe("handlePlan bidirectional sync (local → ADO push)", () => {
     stderrSpy.mockRestore();
   });
 
-  it("skips push when remote has newer revision (conflict)", async () => {
+  it("pushes local changes even when remote has newer revision (field-level merge)", async () => {
     const localItem = makeAdoItem({ state: "In Progress", title: "Local edit" });
     const remoteItem = makeAdoItem({ state: "In Progress", title: "Remote edit", rev: 5 });
+    const updatedItem = makeAdoItem({ state: "In Progress", title: "Local edit", rev: 6 });
 
     mockGetItemState.mockResolvedValue({
       localPath: "/mock/path.yaml",
@@ -378,17 +379,19 @@ describe("handlePlan bidirectional sync (local → ADO push)", () => {
       syncStatus: "synced",
     });
     mockLoadById.mockResolvedValue(localItem);
-    // Remote has rev 5 > adoRev 1 → conflict, skip push
+    // Remote has rev 5 > adoRev 1 — but we now push anyway using field-level diff
     mockGetWorkItem
-      .mockResolvedValueOnce(remoteItem) // rev check — rev 5 > 1
-      .mockResolvedValueOnce(remoteItem); // main fetch
+      .mockResolvedValueOnce(remoteItem) // push phase fetch
+      .mockResolvedValueOnce(updatedItem); // main fetch after push
+    mockUpdateWorkItem.mockResolvedValue(updatedItem);
     mockAddComment.mockResolvedValue({ id: 1, text: "comment" });
 
     await handleWorkItems(["plan", "100"]);
 
-    // updateWorkItem should NOT have been called for push (conflict)
-    // It may be called for state transition if applicable
-    expect(mockUpdateWorkItem).not.toHaveBeenCalled();
+    // updateWorkItem should be called for the push (title differs)
+    expect(mockUpdateWorkItem).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 100, title: "Local edit" }),
+    );
     const outputArg = mockOutput.mock.calls[0][0];
     expect(outputArg.codePlan).toBeDefined();
   });

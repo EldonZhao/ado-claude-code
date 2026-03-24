@@ -117,7 +117,7 @@ export function localToAdoPatch(
  * Excludes syncedAt since that changes on every sync but doesn't represent a content change.
  */
 export function serializeForHash(item: LocalWorkItemOutput): string {
-  const { syncedAt, latestComment, ...rest } = item;
+  const { syncedAt, ...rest } = item;
   return stringifyYaml(rest, { sortMapEntries: true });
 }
 

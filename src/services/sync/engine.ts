@@ -187,16 +187,10 @@ export class SyncEngine {
         }
 
         if (existingState && remoteItem.rev > existingState.adoRev) {
-          // Remote changed since our last sync — conflict
-          await this.stateManager.setItemState(id, {
-            ...existingState,
-            syncStatus: "conflict",
-          });
-          result.conflicts++;
-          result.errors.push(
-            `Conflict on #${id}: remote rev ${remoteItem.rev} > synced rev ${existingState.adoRev}`,
+          logger.info(
+            { id, remoteRev: remoteItem.rev, syncedRev: existingState.adoRev },
+            "Remote rev advanced since last sync, attempting field-level merge",
           );
-          continue;
         }
 
         // Compute diff against what we last synced (use remote as baseline)
